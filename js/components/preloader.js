@@ -48,8 +48,8 @@ export function run() {
        { transform: 'scale(1) rotate(0)' }],
       { duration: D('--d-stamp') || 200, delay: 620, easing: E('--e-flick'), fill: 'forwards' });
     stamp.animate(
-      [{ background: cs.getPropertyValue('--shu-wet').trim() || '#E04A2F' },
-       { background: cs.getPropertyValue('--shu').trim() || '#C1372B' }],
+      [{ background: cs.getPropertyValue('--brand-wet').trim() || '#E04A2F' },
+       { background: cs.getPropertyValue('--brand').trim() || '#C1372B' }],
       { duration: D('--d-soak') || 700, delay: 820, fill: 'forwards' });
   }
 

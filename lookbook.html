@@ -69,7 +69,7 @@
     <div class="section__head">
       <div>
         <p class="micro">// LOOKBOOK_001</p>
-        <h1 id="lbHead" style="font-family:var(--display);font-size:var(--t-2xl);text-transform:uppercase;line-height:.92">In the Field</h1>
+        <h1 class="page-title" id="lbHead">In the Field</h1>
       </div>
       <a class="mono" href="collection.html">[ Shop_The_Drop → ]</a>
     </div>
@@ -166,6 +166,9 @@
 <dialog id="quickview" aria-label="Product quick view"></dialog>
 <dialog id="drawer" aria-label="Bag and wishlist"></dialog>
 <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+<!-- Assertive, and ONLY for a blocked or failed action. A polite message can
+     queue behind a confirmation, which is wrong for "you cannot do that". -->
+<div id="alert" class="sr-only" role="alert" aria-live="assertive"></div>
 <!--/#SHELL:DIALOGS-->
 <script type="module" src="js/main.js"></script>
 </body>

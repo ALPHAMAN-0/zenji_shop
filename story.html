@@ -69,9 +69,9 @@
     <div class="section__head">
       <div>
         <p class="micro">// MANIFESTO_001</p>
-        <h1 id="stHead" style="font-family:var(--display);font-size:var(--t-2xl);text-transform:uppercase;line-height:.92">The ZENJI Ethos</h1>
+        <h1 class="page-title" id="stHead">The ZENJI Ethos</h1>
       </div>
-      <p class="jp" lang="ja" style="font-size:var(--t-lg);color:var(--shu)">力</p>
+      <p class="jp" lang="ja" style="font-size:var(--t-lg);color:var(--brand)">力</p>
     </div>
 
     <div class="manifesto__grid">
@@ -185,6 +185,9 @@
 <dialog id="quickview" aria-label="Product quick view"></dialog>
 <dialog id="drawer" aria-label="Bag and wishlist"></dialog>
 <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+<!-- Assertive, and ONLY for a blocked or failed action. A polite message can
+     queue behind a confirmation, which is wrong for "you cannot do that". -->
+<div id="alert" class="sr-only" role="alert" aria-live="assertive"></div>
 <!--/#SHELL:DIALOGS-->
 <script type="module" src="js/main.js"></script>
 </body>

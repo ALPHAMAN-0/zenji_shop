@@ -116,8 +116,8 @@
 }
 
 /* Ink darkens as it dries: every headline lands half-dry and sets. */
-.dry { color: var(--sumi-wash); transition: color var(--d-set) var(--e-soak); }
-.dry.is-in { color: var(--sumi); }
+.dry { color: var(--ink-2); transition: color var(--d-set) var(--e-soak); }
+.dry.is-in { color: var(--ink); }
 
 /* An element that BOTH bleeds and dries needs a single combined transition
    list. Two `transition` shorthands in two rules do not merge — the later one
@@ -132,6 +132,12 @@
 
 /* ============================================================================
    KEYFRAMES
+   ----------------------------------------------------------------------------
+   Three of these used to be dead: `stamp` and `fleck` were reimplemented as
+   inline WAAPI keyframe arrays in hanko.js and never referenced from CSS, and
+   `impact` had no consumer anywhere at all. The stale comment on `stamp` even
+   claimed it was "the keyboard-activation path", which it was not — keyboard
+   activation fires the same pointerdown-bound press().
    ========================================================================= */
 
 /* The marquee floor. steps() so the rail never sub-pixel-shimmers at rest. */
@@ -140,9 +146,6 @@
   to   { transform: translate3d(-50%, 0, 0); }
 }
 
-/* Hanko press. WAAPI drives the real one; this is the keyboard-activation path. */
-@keyframes stamp {
-  0%   { transform: scale(1.55) rotate(-7deg); }
   62%  { transform: scale(0.97) rotate(1.5deg); }
   100% { transform: scale(1) rotate(0); }
 }
@@ -155,15 +158,9 @@
   to   { height: 26px; }
 }
 
-/* Splatter fleck. transform-only, six per card, 40ms apart. */
-@keyframes fleck {
-  from { transform: translate3d(0, 0, 0) scale(0.2); }
   to   { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
 }
 
-/* The single steps(1) impact frame that carries the shonen register. */
-@keyframes impact {
-  0%, 61%  { transform: translate3d(0, 0, 0); }
   62%, 74% { transform: translate3d(0, -3px, 0) scale(1.04); }
   100%     { transform: translate3d(0, 0, 0); }
 }
@@ -199,7 +196,7 @@
     --d-turn: 1ms; --d-soak: 1ms; --d-bleed: 1ms; --d-bleed-lg: 1ms;
     --d-set: 1ms; --d-stroke: 1ms; --d-drip: 1ms;
     --s-word: 0ms; --s-line: 0ms; --s-card: 0ms;
-    --s-splat: 0ms; --s-bracket: 0ms; --j: 0ms;
+    --s-splat: 0ms; --j: 0ms;
     /* --d-ui is deliberately NOT reduced: the motion toggle's own thumb must
        still read as a switch being thrown. */
   }
@@ -210,7 +207,7 @@
   --d-turn: 1ms; --d-soak: 1ms; --d-bleed: 1ms; --d-bleed-lg: 1ms;
   --d-set: 1ms; --d-stroke: 1ms; --d-drip: 1ms;
   --s-word: 0ms; --s-line: 0ms; --s-card: 0ms;
-  --s-splat: 0ms; --s-bracket: 0ms; --j: 0ms;
+  --s-splat: 0ms; --j: 0ms;
 }
 
 /* Everything that must simply BE, rather than arrive. */
@@ -235,5 +232,5 @@
 
 /* --- Contrast ------------------------------------------------------------ */
 @media (prefers-contrast: more) {
-  :root { --sumi-12: #16130F5C; --rule: 2px; }
+  :root { --rule-c: #0A0A0A5C; --rule: 2px; }
 }

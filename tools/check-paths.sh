@@ -49,15 +49,61 @@ if [ -n "$hits" ]; then echo "$hits"; note "bad module specifier"; else ok "modu
 if git ls-files --error-unmatch .nojekyll >/dev/null 2>&1; then ok ".nojekyll committed"
 else note ".nojekyll not committed (git add .nojekyll)"; fi
 
-# 7. Every referenced image must exist with EXACT case: macOS git is
+# 7. Every referenced asset must exist with EXACT case: macOS git is
 #    case-insensitive, the Pages Linux server is not.
+#
+#    This gate used `[ -e "$ref" ]`, which on a case-insensitive filesystem is
+#    true for image/will-of-the-sun-1.webp even though the real file is
+#    Will-of-the-sun-1.webp. So it could only ever catch a MISSING file, never
+#    a MISCASED one — which is the failure that reaches the Linux server and
+#    the only reason the gate says "EXACT case". `grep -qxF` against a real
+#    listing is case-sensitive regardless of the filesystem.
+real=$(find image font -type f 2>/dev/null | sed 's|^\./||' | sort)
 missing=0
 while read -r ref; do
   [ -z "$ref" ] && continue
-  [ -e "$ref" ] || { printf '    missing: %s\n' "$ref"; missing=1; }
-done < <(grep -rhoE '(image/[A-Za-z0-9_.-]+\.(webp|mp4|png))' \
+  printf '%s\n' "$real" | grep -qxF "$ref" \
+    || { printf '    missing or miscased: %s\n' "$ref"; missing=1; }
+done < <(grep -rhoE '((image|font)/[A-Za-z0-9_.@-]+\.(webp|avif|png|jpg|jpeg|svg|mp4|webm|woff2|woff|ttf))' \
   --include='*.html' --include='*.css' --include='*.js' . --exclude-dir=.git 2>/dev/null | sort -u)
-[ $missing -eq 0 ] && ok "all image refs resolve" || note "missing image reference"
+[ $missing -eq 0 ] && ok "all asset refs resolve, case-exact" || note "missing/miscased asset reference"
+
+# 8. The duration DEAD BAND. README.md claims you cannot type 400ms because no
+#    token holds that value; this is what makes that true rather than merely
+#    aspirational. Only tokens.css may contain a time literal, and only the
+#    reduced-motion 1ms swap may appear outside it.
+#    Comments are stripped first, and three things are legitimately literal:
+#    the reduced-motion 1ms swap, a 0ms stagger (which is an ABSENCE of
+#    stagger, not a duration), and base.css's hand-authored 12-value jitter
+#    list, which is authored data — the README is explicit that it must never
+#    be Math.random().
+hits=$(python3 - <<'PY'
+import glob, re, sys
+bad = []
+for f in sorted(glob.glob('css/*.css')):
+    if f.endswith('tokens.css'): continue
+    src = re.sub(r'/\*.*?\*/', '', open(f).read(), flags=re.S)   # drop comments
+    for i, line in enumerate(src.split('\n'), 1):
+        if '--j:' in line: continue                              # authored jitter
+        for m in re.finditer(r'(?<![\w.-])(\d+(?:\.\d+)?)(ms|s)\b', line):
+            if m.group(0) in ('0ms', '1ms'): continue
+            bad.append(f"{f}:{i}: {m.group(0)}")
+print('\n'.join(bad))
+PY
+)
+if [ -n "$hits" ]; then echo "$hits"; note "time literal outside tokens.css"
+else ok "no time literals outside tokens"; fi
+
+# 9. The pre-paint boot script reads the motion preference straight out of
+#    localStorage before any module loads, so it hardcodes store.js's version
+#    prefix. Bump the prefix in one place and the other silently stops
+#    hydrating, with no error anywhere.
+prefix=$(grep -oE "PREFIX = '[^']+'" js/core/store.js | grep -oE "'[^']+'" | tr -d "'")
+bad=0
+for f in index.html collection.html lookbook.html story.html; do
+  grep -q "'${prefix}motion'" "$f" || { printf '    %s does not use %smotion\n' "$f" "$prefix"; bad=1; }
+done
+[ $bad -eq 0 ] && ok "boot script matches store.js prefix ($prefix)" || note "storage prefix drift"
 
 echo
 if [ $fail -eq 0 ]; then printf '\033[32mPASS\033[0m — safe to push\n'; else printf '\033[31mFAILED\033[0m\n'; fi

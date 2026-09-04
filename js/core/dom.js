@@ -51,3 +51,14 @@ export function say(msg) {
   // A frame's gap guarantees repeat messages are re-announced.
   requestAnimationFrame(() => { liveRegion.textContent = msg; });
 }
+
+let alertRegion = null;
+/** Interrupt the user. For errors and blocked actions ONLY — never for a
+    confirmation, and never for anything they will already hear from focus
+    moving or from a native live role. */
+export function shout(msg) {
+  alertRegion ||= $('#alert');
+  if (!alertRegion) return;
+  alertRegion.textContent = '';
+  requestAnimationFrame(() => { alertRegion.textContent = msg; });
+}

@@ -19,32 +19,60 @@ import * as Flood from './effects/flood.js';
 import * as Lookbook from './effects/lookbook.js';
 import * as InkBasin from './effects/inkbasin.js';
 
-function boot() {
-  /* Structure and state first: these must work even if an effect throws. */
-  Nav.init();
-  MotionToggle.init();
-  Hanko.init();
-  Drawer.init();
-  QuickView.init();
-  Card.init();
-  Byobu.init();
-  Filter.init();
+/* Local hosts only. `?debug` used to work in production, which shipped the
+   dev verifier — and its 24 image probes — to real visitors. */
+const LOCAL = ['localhost', '127.0.0.1', '[::1]', ''];
+const isLocal = () => LOCAL.includes(location.hostname);
 
-  /* Then motion. Each is independently guarded so one failure cannot cascade
-     into a page that renders but never reveals. */
-  for (const [name, fn] of Object.entries({
-    marquee: Marquee.init, hero: Hero.init, flood: Flood.init,
-    lookbook: Lookbook.init, inkBasin: InkBasin.init
-  })) {
-    try { fn(); } catch (err) { console.warn(`[zenji] ${name} failed`, err); }
+/* Every init is guarded INDIVIDUALLY.
+
+   This is not defensive noise. The inline head script has already swapped
+   `no-js` -> `js-ready` by the time this runs, so every hidden-until-revealed
+   rule is live. If one init throws and takes the rest of boot with it,
+   `observe()` never runs, no element ever gets `.is-in`, and roughly a dozen
+   `.bleed[data-reveal]` elements render INVISIBLE on a page that otherwise
+   looks fine. The `.js-ready` law protects against JS being disabled; it does
+   not protect against this file failing.
+
+   A real trigger: a malformed `zenji.v1.bag` value in localStorage parses to a
+   non-array, `bag.js` accepts it, and `bagCount()`'s .reduce throws inside
+   Drawer.init(). One bad storage key should never blank the page. */
+const disposers = [];
+function run(name, fn) {
+  try {
+    const d = fn();
+    if (typeof d === 'function') disposers.push(d);
+  } catch (err) {
+    console.warn(`[zenji] ${name} failed`, err);
   }
+}
 
-  observe();
+function boot() {
+  /* Reveal FIRST. IntersectionObserver callbacks are async, so everything
+     below still completes in this same tick before anything reveals — but if
+     any of it throws, the observer is already registered and content appears. */
+  run('reveal', observe);
+
+  /* Structure and state. */
+  run('nav', Nav.init);
+  run('motionToggle', MotionToggle.init);
+  run('hanko', Hanko.init);
+  run('drawer', Drawer.init);
+  run('quickview', QuickView.init);
+  run('card', Card.init);
+  run('byobu', Byobu.init);
+  run('filter', Filter.init);
+
+  /* Then motion. */
+  run('marquee', Marquee.init);
+  run('hero', Hero.init);
+  run('flood', Flood.init);
+  run('lookbook', Lookbook.init);
+  run('inkBasin', InkBasin.init);
 
   Preloader.run().catch(() => {});
 
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-      || new URLSearchParams(location.search).has('debug')) {
+  if (isLocal()) {
     import('./dev/verify-data.js').then(m => m.run()).catch(() => {});
   }
 }

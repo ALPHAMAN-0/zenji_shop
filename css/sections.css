@@ -48,14 +48,14 @@
   position: absolute; inset: auto 0 -1px 0; height: 74%;
   z-index: 1; pointer-events: none;
   background: linear-gradient(to bottom,
-    #EFE9DC00 0%, #EFE9DCA6 26%, #EFE9DCE6 50%, #EFE9DCFA 72%, var(--washi) 100%);
+    #FFFFFF00 0%, #FFFFFFA6 26%, #FFFFFFE6 50%, #FFFFFFFA 72%, var(--ground) 100%);
 }
 .hero__body { position: relative; z-index: 2; }
 
 .hero__title {
   font-family: var(--display);
   font-size: var(--t-display);
-  line-height: 0.86;
+  line-height: var(--lh-display);
   letter-spacing: var(--track-disp);
   text-transform: uppercase;
   display: flex; flex-direction: column;
@@ -114,7 +114,7 @@
 /* The fold seam. A hairline, not a gradient panel. */
 .leaf::after {
   content: ""; position: absolute; top: 0; bottom: 0; right: -1px; width: 1px;
-  background: linear-gradient(var(--washi-3), #16130F26, var(--washi-3));
+  background: linear-gradient(var(--ground-3), var(--ink-a15), var(--ground-3));
 }
 .leaf:last-child::after { display: none; }
 /* The caption carries the kanji now. It still lifts into the colorway as the
@@ -122,20 +122,20 @@
 .leaf__cap { padding-top: .85rem; display: flex; flex-direction: column; gap: .3rem; }
 .leaf__kanji {
   font-family: var(--jp); font-size: var(--t-md);
-  color: var(--sumi-wash);
+  color: var(--ink-2);
   transition: color var(--d-set) var(--e-soak);
 }
-.leaf.is-in .leaf__kanji { color: var(--accent-ink, var(--sumi)); }
+.leaf.is-in .leaf__kanji { color: var(--accent-ink, var(--ink)); }
 
 /* The seal, and the drip that runs from its base. */
 .leaf__seal {
   position: absolute; left: 7%; bottom: 7%; z-index: 3;
-  width: 22px; height: 22px; background: var(--shu);
-  box-shadow: inset 0 0 0 2px #EFE9DC59;
+  width: 22px; height: 22px; background: var(--brand);
+  box-shadow: inset 0 0 0 2px #FFFFFF59;
 }
 .leaf__seal::after {
   content: ""; position: absolute; left: 45%; top: 100%; width: 2px; height: 0;
-  background: var(--shu);
+  background: var(--brand);
 }
 .leaf.is-in .leaf__seal::after { animation: drip var(--d-drip) var(--e-drip) forwards; }
 
@@ -146,11 +146,11 @@
 }
 
 /* --- Manifesto ------------------------------------------------------------ */
-.manifesto { background: var(--washi-2); }
+.manifesto { background: var(--ground-2); }  /* tint, so it is not a second identical white band */
 .manifesto__body {
-  font-family: var(--display);
+  font-family: var(--mono); /* not Anton: a condensed poster face is not a 26ch paragraph */
   font-size: var(--t-lg);
-  line-height: 1.42;
+  line-height: var(--lh-prose);
   max-width: 26ch;
 }
 .manifesto__grid {
@@ -167,13 +167,13 @@
 .flood-zone { position: relative; isolation: isolate; }   /* REQUIRED for difference */
 .flood-zone__ink {
   position: absolute; inset: 0; z-index: 1;
-  background: var(--taku);
+  background: var(--ground-inv);
   contain: strict;
   pointer-events: none;
 }
 .flood-zone__type {
   position: relative; z-index: 2;
-  color: var(--washi);
+  color: var(--ground);
   mix-blend-mode: difference;
   font-family: var(--display);
   font-size: var(--t-2xl);
@@ -184,11 +184,18 @@
 /* --- Lookbook ------------------------------------------------------------- */
 .look {
   position: relative;
-  background: var(--taku); color: var(--taku-fg);
+  background: var(--ground-inv); color: var(--ink-inv);
   overflow: clip;
 }
+/* The homepage teaser runs on paper. Its own band would otherwise be the
+   middle of THREE consecutive inverted bands — flood, lookbook, footer — and
+   the whole lower third of index.html read as one undifferentiated dark mass
+   with every section boundary invisible. The panels stay dark, so the imagery
+   still carries the weight; only the band around them flips. */
+.look--paper { background: var(--ground); color: var(--ink); }
+.look--paper .section__head { border-bottom-color: var(--rule-c); }
 .look__panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
-.look__panel { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: #241f1a; }
+.look__panel { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: #171717; }
 .look__panel img {
   position: absolute; inset: -8% 0;
   width: 100%; height: 116%; object-fit: cover;
@@ -196,7 +203,7 @@
 }
 @media (max-width: 760px) { .look__panels { grid-template-columns: 1fr; } }
 
-.look__wide { position: relative; aspect-ratio: 1898 / 829; overflow: hidden; background: #2E2924; }
+.look__wide { position: relative; aspect-ratio: 1898 / 829; overflow: hidden; background: #1F1F1F; }
 .look__wide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* --- Footer ink basin ----------------------------------------------------- */
@@ -206,7 +213,7 @@
 }
 .footer__mark {
   width: 74px; height: 74px;
-  background: var(--taku-fg);
+  background: var(--ink-inv);
   -webkit-mask-image: url(../image/wm_logo.webp);
   mask-image: url(../image/wm_logo.webp);
   -webkit-mask-size: contain; mask-size: contain;
@@ -217,14 +224,14 @@
 /* --- Preloader 墨磨り ------------------------------------------------------ */
 .plate {
   position: fixed; inset: 0; z-index: 300;
-  background: var(--washi);
+  background: var(--ground);
   display: grid; place-items: center;
   transition: transform var(--d-bleed) var(--e-exit);
 }
 .plate[data-done] { transform: translate3d(0, -101%, 0); }
 .plate__mark {
   width: clamp(96px, 18vw, 168px); aspect-ratio: 1;
-  background: var(--sumi);
+  background: var(--ink);
   --fill: 0%;
   -webkit-mask-image: url(../image/wm_logo.webp);
   mask-image: url(../image/wm_logo.webp);
@@ -232,12 +239,16 @@
   -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
   -webkit-mask-position: center; mask-position: center;
 }
-/* The monogram is PAINTED IN behind a travelling wet edge, not revealed. */
-.plate__mark::before {
-  content: ""; display: block; width: 100%; height: 100%;
-  background: var(--sumi);
+/* The monogram is PAINTED IN behind a travelling wet edge, not revealed.
+   This MUST be a real element, not ::before: preloader.js reaches the fill
+   layer via firstElementChild, and with a pseudo-element that resolved to
+   .plate__mark itself, overwriting the logo mask above and painting a plain
+   square instead of the ZJ monogram. */
+.plate__mark > span {
+  display: block; width: 100%; height: 100%;
+  background: var(--ink);
 }
 .plate__stamp {
-  width: 34px; height: 34px; background: var(--shu);
+  width: 34px; height: 34px; background: var(--brand);
   transform: scale(0);
 }

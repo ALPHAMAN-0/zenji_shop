@@ -7,19 +7,22 @@
 .nav {
   position: fixed;
   inset: 0 0 auto 0;
-  z-index: 90;
+  z-index: var(--z-nav);
   height: var(--header-h);
-  background: var(--washi);
-  border-bottom: var(--rule) solid var(--sumi-12);
+  background: var(--ground);
+  border-bottom: var(--rule) solid var(--rule-c);
   padding-top: env(safe-area-inset-top);
 }
 .nav-spacer { height: var(--header-h); }
 
-/* When the flood has swallowed the page, the nav inverts to the rubbing. */
-.nav[data-ground="taku"] {
-  background: var(--taku);
-  color: var(--taku-fg);
-  border-bottom-color: #DCD5C61F;
+/* When the flood has swallowed the page behind it, the nav inverts.
+   This used to be dead: nothing anywhere set data-ground, so a fixed nav with
+   an opaque light background sat over a near-black flood section. nav.js now
+   drives it off the shared rAF loop. */
+.nav[data-ground="inv"] {
+  background: var(--ground-inv);
+  color: var(--ink-inv);
+  border-bottom-color: var(--rule-inv);
 }
 
 .nav__in {
@@ -39,9 +42,13 @@
 }
 
 /* --- Section rhythm ------------------------------------------------------- */
-.section { padding-block: clamp(4.5rem, 3rem + 7vw, 10rem); }
-.section--tight { padding-block: clamp(3rem, 2rem + 4vw, 6rem); }
-.section--taku { background: var(--taku); color: var(--taku-fg); }
+.section { padding-block: var(--sp-section); }
+.section--tight { padding-block: var(--sp-section-tight); }
+.section--inv { background: var(--ground-inv); color: var(--ink-inv); }
+/* The warm tint from the reference palette, used to keep adjacent bands
+   distinguishable. Two product sections running back to back as identical
+   whites is what made the middle of the homepage read as one undivided slab. */
+.section--tint { background: var(--ground-2); }
 
 .section__head {
   display: flex;
@@ -51,9 +58,9 @@
   flex-wrap: wrap;
   margin-bottom: clamp(2rem, 1.2rem + 3vw, 4rem);
   padding-bottom: 1.1rem;
-  border-bottom: var(--rule) solid var(--sumi-12);
+  border-bottom: var(--rule) solid var(--rule-c);
 }
-.section--taku .section__head { border-bottom-color: #DCD5C61F; }
+.section--inv .section__head { border-bottom-color: var(--rule-inv); }
 
 /* --- Product grid ---------------------------------------------------------
    12 tiles is deliberate: it is exactly one full cycle of the 12-value
@@ -63,15 +70,18 @@
   gap: clamp(1rem, 0.5rem + 2vw, 2.25rem) clamp(0.75rem, 0.4rem + 1.4vw, 1.5rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-@media (min-width: 640px)  { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1080px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* 2 -> 4 -> 5, deliberately skipping 3. With ten products a 3-column grid
+   lays out 3/3/3/1 and orphans a single card, and it was firing across the
+   entire 640-1079px tablet range. 2 gives 5x2, 4 gives 4/4/2, 5 gives 5x2 —
+   every row either full or half. Breakpoints from the ladder in tokens.css. */
+@media (min-width: 720px)  { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 1500px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 
 /* --- Footer --------------------------------------------------------------- */
 .footer {
   position: relative;
-  background: var(--taku);
-  color: var(--taku-fg);
+  background: var(--ground-inv);
+  color: var(--ink-inv);
   padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) 0;
   overflow: hidden;
 }
@@ -82,9 +92,13 @@
 }
 @media (min-width: 780px) { .footer__cols { grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr)); } }
 
+/* Sixteen uses in the markup and no rule anywhere, so `ul[class]`'s reset
+   left the footer link columns as a gapless unstyled stack. */
+.footer__list { display: grid; gap: 0.55rem; }
+
 .footer__bar {
   margin-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
-  border-top: var(--rule) solid #DCD5C61F;
+  border-top: var(--rule) solid var(--rule-inv);
   padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
   display: flex;
   gap: 1rem 2rem;

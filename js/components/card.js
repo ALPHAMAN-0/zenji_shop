@@ -15,33 +15,74 @@ async function arm(card) {
   card.dataset.ready = '';
 }
 
-export function init(root = document) {
-  const cards = $$('.card', root);
+/* ONE delegated pair for the whole document, the same pattern hanko.js uses.
 
-  for (const card of cards) {
-    on(card, 'pointerenter', () => arm(card), { once: true, passive: true });
-    on(card, 'focusin', () => arm(card), { once: true });
-    /* --ang comes from which side the cursor entered, so the dissolve starts
-       from the pointer rather than always from the same edge. */
-    on(card, 'pointermove', e => {
-      const frame = card.querySelector('.card__frame');
-      if (!frame) return;
-      const r = frame.getBoundingClientRect();
-      if (!r.width) return;
-      const left = (e.clientX - r.left) / r.width < 0.5;
-      card.style.setProperty('--ang', left ? '100deg' : '280deg');
-    }, { passive: true });
-  }
+   What this replaces: three listeners PER CARD, one of which ran a
+   querySelector AND a getBoundingClientRect on every single pointermove
+   event. Ten cards on collection.html meant thirty listeners and a forced
+   layout read per mouse movement — the clearest INP risk on the site.
+
+   The realisation is that the code never wanted continuous tracking. Its own
+   comment said --ang is decided by whichever side the cursor entered on, and
+   entry happens once. So the rect is read once per hover instead of once per
+   event, and `pointerover` is used rather than `pointerenter` because
+   pointerover bubbles and pointerenter does not.
+
+   Two live bugs fixed for free: `{ once: true }` on pointerenter meant a card
+   whose back image failed to load could never re-arm, and cards injected
+   after boot (the related strip on a product page) were never armed at all.
+   Delegation covers both, the way observe()'s data-seen marker does. */
+let bound = false;
+let lastCard = null;
+
+function bindDelegates() {
+  if (bound) return () => {};
+  bound = true;
+  const offOver = on(document, 'pointerover', e => {
+    const card = e.target.closest?.('.card');
+    if (!card || card === lastCard) return;
+    lastCard = card;
+    arm(card);
+    const frame = card.querySelector('.card__frame');
+    if (!frame) return;
+    const r = frame.getBoundingClientRect();
+    if (!r.width) return;
+    card.style.setProperty('--ang',
+      (e.clientX - r.left) / r.width < 0.5 ? '100deg' : '280deg');
+  }, { passive: true });
+
+  const offOut = on(document, 'pointerout', e => {
+    if (e.relatedTarget && e.target.closest?.('.card')?.contains(e.relatedTarget)) return;
+    lastCard = null;
+  }, { passive: true });
+
+  const offFocus = on(document, 'focusin', e => {
+    const card = e.target.closest?.('.card');
+    if (card) arm(card);
+  });
+
+  return () => { offOver(); offOut(); offFocus(); bound = false; lastCard = null; };
+}
+
+export function init(root = document) {
+  const offDelegates = bindDelegates();
+  let io = null;
 
   /* Coarse pointer: no hover exists, so the centre band does the turning. */
   if (matchMedia('(pointer: coarse)').matches && !reduced()) {
-    const io = new IntersectionObserver(entries => {
+    io = new IntersectionObserver(entries => {
       for (const e of entries) {
         const card = e.target;
         if (e.isIntersecting) { arm(card); card.classList.add('is-turned'); }
         else card.classList.remove('is-turned');
       }
     }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 });
-    cards.forEach(c => io.observe(c));
+    $$('.card', root).forEach(c => io.observe(c));
   }
+
+  return () => {
+    offDelegates();
+    io?.disconnect();
+    $$('.card', root).forEach(c => c.classList.remove('is-turned'));
+  };
 }

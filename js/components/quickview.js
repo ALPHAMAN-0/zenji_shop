@@ -12,7 +12,7 @@
    Deep link: ?p=<slug> opens on load, and pushState writes the same URL so
    the browser Back button closes the view.
    ========================================================================= */
-import { $, el, say } from '../core/dom.js';
+import { $, el, say, shout } from '../core/dom.js';
 import { byId, SIZES, fmt, priceOf, discountOf } from '../data/products.js';
 import { reduced } from '../core/motion.js';
 import { addToBag, toggleWish, inWish } from '../core/bag.js';
@@ -23,7 +23,7 @@ let dlg, current = null, chosenSize = null, restoreUrl = null;
 
 function panel(p) {
   const off = discountOf(p);
-  const ink = p.accentInk || 'var(--sumi)';
+  const ink = p.accentInk || 'var(--ink)';
   return el('div.qv', { style: `--accent:${p.colorway.hex};--accent-ink:${ink};--accent-hot:${p.accentHot};--plate:${p.front.plate}` },
     el('div.veil.bleed', { id: 'qvVeil', 'data-heavy': true, 'aria-hidden': 'true' }),
     el('div.qv__panel',
@@ -35,7 +35,7 @@ function panel(p) {
         })),
       el('div',
         el('p.micro', { style: 'color:var(--accent-hot)' }, `// ${p.sku}`),
-        el('h2', { style: 'font-family:var(--display);font-size:var(--t-xl);text-transform:uppercase;line-height:.94;margin:.4rem 0' }, p.name),
+        el('h2.section__title', { style: 'margin:.4rem 0' }, p.name),
         el('p.jp', { lang: 'ja', style: 'font-size:var(--t-lg);color:var(--accent-hot)' }, p.kanji),
         el('p', { style: 'margin:.9rem 0;max-width:46ch' }, p.lore),
         el('div.card__row', { style: 'margin-bottom:1.1rem' },
@@ -117,7 +117,9 @@ export function close(fromPop) {
 function onAdd(btn) {
   if (!current) return;
   if (!chosenSize) {
-    say('Select a size first.');
+    /* A blocked action must interrupt, not queue politely behind whatever
+       confirmation is already in the region. */
+    shout('Select a size before adding to bag.');
     const first = dlg.querySelector('.size');
     first && first.focus();
     return;

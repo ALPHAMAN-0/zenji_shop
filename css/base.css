@@ -14,12 +14,15 @@ html {
 
 body {
   margin: 0;
-  background: var(--washi);
-  color: var(--sumi);
+  background: var(--ground);
+  color: var(--ink);
   font-family: var(--body);
   font-size: var(--t-base);
-  line-height: 1.65;
-  font-weight: 400;
+  line-height: var(--lh-body);
+  font-weight: var(--w-body);
+  /* No engine may invent a heavier or oblique Anton. The display face has one
+     weight by design, and a synthesised bold would break the weight law. */
+  font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
@@ -29,8 +32,11 @@ body {
 h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
 ul[class], ol[class] { list-style: none; margin: 0; padding: 0; }
 
-/* Sumi has no bold. Emphasis is size and ink density, never weight. */
-h1, h2, h3, h4, strong, b { font-weight: 400; }
+/* Weight is STRUCTURAL, never emphatic. The display face has exactly one
+   weight, so headings have no choice to make; 500 exists only for labels and
+   interactive text. There is no bold run of prose anywhere on this site. */
+h1, h2, h3, h4 { font-weight: var(--w-display); }
+strong, b { font-weight: var(--w-label); }
 
 img, video, svg { display: block; max-width: 100%; }
 img { height: auto; background-color: var(--plate); }
@@ -39,7 +45,7 @@ a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { background: none; border: 0; padding: 0; cursor: pointer; }
 
-::selection { background: var(--shu); color: var(--washi); }
+::selection { background: var(--brand); color: var(--brand-fg); }
 
 /* --- The .js-ready law -----------------------------------------------------
    Every hidden-until-revealed rule is scoped inside .js-ready, which the
@@ -48,6 +54,11 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
    ink-on-paper document. A blank site is a catastrophic AND invisible
    failure mode; this costs one class.
    ------------------------------------------------------------------------ */
+/* Keyed on .bleed, NOT [data-reveal]. #heroMedia and #floodInk are [data-heavy]
+   and driven imperatively, so a [data-reveal]-only guard left .bleed's own
+   `--front: 0%` standing and masked the primary above-the-fold image to zero
+   width whenever JS was blocked or threw before hero.js ran. */
+.no-js .bleed,
 .no-js [data-reveal] { --front: 110%; }
 
 /* --- Reveal contract ------------------------------------------------------
@@ -118,10 +129,10 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .skip-link {
   position: absolute;
   top: 0; left: 0;
-  z-index: 200;
+  z-index: var(--z-skip);
   transform: translateY(-120%);
-  background: var(--sumi);
-  color: var(--washi);
+  background: var(--ink);
+  color: var(--ground);
   padding: 0.85rem 1.4rem;
   font-family: var(--mono);
   font-size: var(--t-sm);
@@ -132,17 +143,50 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 
 .mono {
   font-family: var(--mono);
+  font-weight: var(--w-label);
   font-size: var(--t-sm);
   letter-spacing: var(--track-mono);
   text-transform: uppercase;
 }
 .micro {
   font-family: var(--mono);
+  font-weight: var(--w-label);
   font-size: var(--t-xs);
   letter-spacing: var(--track-micro);
   text-transform: uppercase;
 }
 .jp { font-family: var(--jp); font-feature-settings: "palt" 1; }
+
+/* --- Display headings ------------------------------------------------------
+   These replace an inline style="font-family:var(--display);font-size:..."
+   recipe that was repeated in four places, including once inside a JS
+   template. .section__title was already in the markup and styled nowhere.
+   ------------------------------------------------------------------------ */
+.page-title, .section__title {
+  font-family: var(--display);
+  font-weight: var(--w-display);
+  text-transform: uppercase;
+}
+.page-title {
+  font-size: var(--t-2xl);
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-disp);
+}
+.section__title {
+  font-size: var(--t-xl);
+  line-height: var(--lh-head);
+  letter-spacing: var(--track-head);
+}
+
+/* --- The terminal label voice ---------------------------------------------
+   `// SECTION_LABEL`. The marks are drawn by CSS with an empty alt string, so
+   a screen reader announces the label and not "slash slash". Where the
+   content-alt syntax is unsupported the marks simply do not render — the
+   label still reads correctly, which is the right way round to fail.
+   ------------------------------------------------------------------------ */
+.eyebrow { font-family: var(--mono); font-size: var(--t-xs); font-weight: var(--w-label);
+           letter-spacing: var(--track-micro); text-transform: uppercase; }
+.eyebrow::before { content: "// " / ""; }
 
 .wrap {
   width: 100%;
@@ -153,7 +197,10 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 
 /* --- Forced colors ------------------------------------------------------- */
 @media (forced-colors: active) {
-  .fiber, .splat, canvas, .deckle { display: none !important; }
+  /* .card__deckle, not .deckle — and there is no .fiber class, only the
+     --fiber variable. Both were typos, so High Contrast kept the 10px deckle
+     borders this rule exists to suppress. */
+  .splat, canvas, .card__deckle { display: none !important; }
   :focus-visible { outline: 3px solid Highlight; }
   .swatch { forced-color-adjust: none; }
 }

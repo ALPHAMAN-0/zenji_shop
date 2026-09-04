@@ -11,7 +11,12 @@ import { $ } from '../core/dom.js';
 import { add, q, progress } from '../core/raf.js';
 import { reduced } from '../core/motion.js';
 
-const SRC = 'image/hero.mp4';
+/* Resolved against this MODULE's own URL, not the document's. js/effects/ is a
+   fixed location, so ../../ is always the repo root regardless of how deep the
+   page importing it sits — and <video> fails SILENTLY on a bad src, so a
+   document-relative string here would break with no error at all. */
+const SRC = new URL('../../image/hero.mp4', import.meta.url).href;
+const POSTER = new URL('../../image/hero-poster.webp', import.meta.url).href;
 
 function cheapConnection() {
   const c = navigator.connection;
@@ -27,7 +32,7 @@ function mountVideo(host, poster) {
   v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
   v.setAttribute('aria-hidden', 'true');
   v.preload = 'auto';
-  v.poster = 'image/hero-poster.webp';
+  v.poster = POSTER;
   v.width = 1920; v.height = 1080;
   v.src = SRC;
 

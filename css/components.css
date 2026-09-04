@@ -10,7 +10,11 @@
   letter-spacing: 0.3em;
   text-transform: uppercase;
 }
-.wordmark__kanji { font-family: var(--jp); font-size: 0.82em; color: var(--shu); }
+/* Gothic, not Mincho. A hairline Mincho serif beside a condensed heavy Latin
+   reads as two logos sharing a line; heavy condensed Latin + Kaku Gothic is
+   the standard Japanese editorial pairing. Caption kanji stays Mincho, where
+   it sits against mono body text and the contrast is the point. */
+.wordmark__kanji { font-family: var(--jp-gothic); font-size: 0.82em; color: var(--brand); }
 
 .nav__link {
   position: relative;
@@ -34,12 +38,21 @@
   width: 44px; height: 44px;         /* 44px target via box, never by scaling an icon */
   border-radius: 2px;
 }
-.icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+/* currentColor-derived, so one rule serves both grounds. The previous sheet
+   had four hand-written .qv overrides because every paper-scoped value had to
+   be re-authored for the rubbing; deriving from currentColor removes the need. */
+.icon-btn:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.icon-btn:active { background: color-mix(in srgb, currentColor 18%, transparent); }
+.icon-btn svg {
+  width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.4;
+  transition: stroke-width var(--d-snap) var(--e-snap);
+}
+.icon-btn:hover svg { stroke-width: 1.9; }
 .icon-btn__count {
   position: absolute; top: 5px; right: 4px;
   min-width: 16px; height: 16px; padding-inline: 3px;
   display: grid; place-items: center;
-  background: var(--shu); color: var(--washi);
+  background: var(--brand); color: var(--brand-fg);
   font-family: var(--mono); font-size: 9px; letter-spacing: 0.04em;
   border-radius: 8px;
   transform: scale(0);
@@ -47,20 +60,34 @@
 }
 .icon-btn__count[data-n]:not([data-n="0"]) { transform: scale(1); }
 
+/* --- Inverted grounds ------------------------------------------------------
+   Rebinding the pair here means every descendant picks up the legible value
+   automatically, instead of each one needing a hand-written override — which
+   is what produced the four .qv overrides and the twenty-odd hand-computed
+   alpha hexes in the previous sheet.
+
+   Why it is necessary: #BC0100 measures 2.96:1 on --ground-inv, below even
+   the 3:1 non-text floor, so the brand accent is simply not usable on the
+   dark bands at its paper value. */
+.marquee, .look, .footer, .section--inv, .qv, .drawer__foot--inv {
+  --brand: var(--brand-inv);
+  --brand-fg: var(--ink);
+}
+
 /* --- Marquee 濡れ ---------------------------------------------------------
    A CSS steps() floor that JS then couples to scroll velocity. Six lines of
    JS separate this from a stock CSS marquee. Fixed height so a missing rail
    can never shift layout. */
 .marquee {
-  background: var(--taku); color: var(--taku-fg);
+  background: var(--ground-inv); color: var(--ink-inv);
   height: 44px; display: flex; align-items: center;
   overflow: hidden; contain: content;
-  border-block: var(--rule) solid #DCD5C61F;
+  border-block: var(--rule) solid var(--rule-inv);
 }
 .marquee__rail {
   display: flex; flex: none; gap: 0;
   will-change: auto;
-  animation: rail 38s linear infinite;
+  animation: rail var(--d-rail) linear infinite;
 }
 .marquee__seg {
   flex: none; display: flex; align-items: center; gap: 1.5rem;
@@ -68,7 +95,7 @@
   font-family: var(--mono); font-size: var(--t-xs);
   letter-spacing: var(--track-micro); text-transform: uppercase;
 }
-.marquee__dot { color: var(--shu); }
+.marquee__dot { color: var(--brand); }
 .marquee:hover .marquee__rail,
 .marquee:focus-within .marquee__rail { animation-play-state: paused; }
 
@@ -95,10 +122,10 @@
 /* THE one box-shadow on the entire site. */
 .card__frame::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  box-shadow: 0 10px 26px -14px #16130F00;
+  box-shadow: 0 10px 26px -14px #0A0A0A00;
   transition: box-shadow var(--d-turn) var(--e-soak);
 }
-.card:hover .card__frame::after { box-shadow: 0 10px 26px -14px #16130F73; }
+.card:hover .card__frame::after { box-shadow: 0 10px 26px -14px var(--ink-a45); }
 
 .card__img {
   position: absolute; inset: 0;
@@ -112,10 +139,14 @@
    plate before its back image has decoded. */
 .card__img--front { z-index: 2; }
 
+/* Was a 10px paper mat in --ground. On a white ground that mat is invisible
+   and yet still crops 20px off every photograph to draw nothing at all. It
+   becomes the one thing it can still do honestly on this ground: a hairline
+   tile edge. The ink character it gives up is carried by the turn and the
+   splatter, which are the actual signatures. */
 .card__deckle {
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  border: 10px solid var(--washi);
-  mix-blend-mode: normal;
+  box-shadow: inset 0 0 0 var(--rule) var(--rule-c);
 }
 
 /* Splatter — six flecks, transform-only, 40ms apart. Never radially
@@ -124,7 +155,7 @@
 .splat i {
   position: absolute; top: 50%; left: 50%;
   width: 6px; height: 6px; border-radius: 50% 40% 55% 45%;
-  background: var(--accent-splash, var(--shu));
+  background: var(--accent-splash, var(--brand));
   transform: translate3d(0, 0, 0) scale(0);
   transition: transform var(--d-cut) var(--e-flick);
   transition-delay: calc(var(--n) * var(--s-splat));
@@ -132,15 +163,21 @@
 .card:hover .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
 
 .card__meta { padding-top: 0.9rem; display: flex; flex-direction: column; gap: 0.35rem; }
+/* NOT the display face. Anton is an ultra-condensed poster face; at 17-20px
+   it stops reading as display and starts reading as cramped. The label
+   register is what 500-weight mono exists for. */
 .card__name {
-  font-family: var(--display); font-size: var(--t-md);
-  letter-spacing: var(--track-disp); text-transform: uppercase;
+  font-family: var(--mono); font-weight: var(--w-label); font-size: var(--t-sm);
+  /* Positive tracking: this is the label register, not the display register.
+     --track-disp is NEGATIVE, for condensed type at poster scale, and would
+     cramp a monospace label. */
+  letter-spacing: 0.08em; text-transform: uppercase;
 }
-.card__kanji { font-family: var(--jp); color: var(--accent-ink, var(--sumi)); font-size: var(--t-sm); }
+.card__kanji { font-family: var(--jp); color: var(--accent-ink, var(--ink)); font-size: var(--t-sm); }
 .card__row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 
 .price { font-family: var(--mono); font-size: var(--t-sm); letter-spacing: 0.06em; }
-.price--was { position: relative; color: var(--sumi-wash); }
+.price--was { position: relative; color: var(--ink-2); }
 /* The strike is a scaled pseudo-element, not a text-decoration, so it can
    draw itself on reveal. */
 .price--was::after {
@@ -164,61 +201,71 @@
    hairline ring, because #1E3B2E and #5A5C42 are otherwise invisible. */
 .swatch {
   display: inline-block; width: 14px; height: 14px; flex: none;
-  background: var(--accent);
-  box-shadow: inset 0 0 0 1px #16130F40;
+  background: var(--brand);
+  box-shadow: inset 0 0 0 1px var(--ink-a25);
 }
 
 .quick {
   font-family: var(--mono); font-size: var(--t-xs);
   letter-spacing: var(--track-mono); text-transform: uppercase;
   align-self: flex-start; margin-top: 0.2rem;
-  color: var(--sumi-wash);
+  color: var(--ink-2);
   transition: color var(--d-snap) var(--e-snap);
 }
-.card:hover .quick { color: var(--sumi); }
+.card:hover .quick { color: var(--ink); }
 
 /* --- Hanko 判 · every primary CTA is a seal, not a button ----------------- */
 .hanko {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
   min-height: 46px; padding: 0.85rem 1.6rem;
-  background: var(--shu); color: var(--washi);
+  background: var(--brand); color: var(--brand-fg);
   font-family: var(--mono); font-size: var(--t-xs);
   letter-spacing: var(--track-mono); text-transform: uppercase;
   transform: translate3d(0, 0, 0);
   transition: background-color var(--d-soak) var(--e-soak);
 }
-.hanko[data-wet] { background: var(--shu-wet); }
+/* A colour change is NOT motion, so these must exist in CSS and must survive
+   reduced mode. Previously the only feedback was [data-wet], set by JS on
+   pointerdown — and hanko.js early-returns under reduced motion, which left a
+   reduced-motion mouse user with no hover state and no press state on every
+   primary button on the site. */
+.hanko:hover { background: var(--brand-deep); }
+.hanko:active { background: var(--brand-deep); transform: translate3d(0, 1px, 0); }
+.hanko[data-wet] { background: var(--brand-wet); }
+.hanko--ghost:hover { background: currentColor; color: var(--ground); }
+.hanko--ghost:active { transform: translate3d(0, 1px, 0); }
+.hanko[disabled]:hover, .hanko[disabled]:active { background: none; transform: none; }
 /* The drip: accelerating, then simply stopping. Under reduced motion this is
    drawn static at its full height — it is design, not animation. */
 .hanko::before {
   content: ""; position: absolute; left: 14%; top: 100%;
   width: 2px; height: 0;
-  background: var(--shu);
+  background: var(--brand);
 }
 .hanko[data-drip]::before { animation: drip var(--d-drip) var(--e-drip) forwards; }
 .hanko--ghost {
   background: none; color: currentColor;
-  box-shadow: inset 0 0 0 var(--rule) var(--sumi-12);
+  box-shadow: inset 0 0 0 var(--rule) var(--rule-c);
 }
 /* A disabled seal must not read as pressable. It stays a seal, just unlinked. */
 .hanko[disabled] {
   background: none;
-  color: var(--sumi-wash);
-  box-shadow: inset 0 0 0 var(--rule) var(--sumi-12);
+  color: var(--ink-2);
+  box-shadow: inset 0 0 0 var(--rule) var(--rule-c);
   cursor: not-allowed;
 }
 .hanko[disabled]::before { display: none; }
 
 /* --- Dialogs -------------------------------------------------------------- */
 dialog { border: 0; padding: 0; background: none; max-width: none; max-height: none; }
-dialog::backdrop { background: #16130FA6; }
-.veil { position: fixed; inset: 0; background: var(--taku); }
+dialog::backdrop { background: var(--scrim); }
+.veil { position: fixed; inset: 0; background: var(--ground-inv); }
 
 .qv {
   position: fixed; inset: 0; width: 100%; height: 100%;
   display: grid; place-items: center; padding: var(--gutter);
-  color: var(--taku-fg);
+  color: var(--ink-inv);
 }
 .qv__panel {
   position: relative; z-index: 2;
@@ -235,26 +282,30 @@ dialog::backdrop { background: #16130FA6; }
 .size {
   min-width: 46px; min-height: 44px; padding: 0.5rem 0.7rem;
   font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 0.1em;
-  box-shadow: inset 0 0 0 var(--rule) #DCD5C63D;
+  box-shadow: inset 0 0 0 var(--rule) var(--ink-inv-25);
   transition: transform var(--d-snap) var(--e-snap);
 }
-.size[aria-pressed="true"] { background: var(--taku-fg); color: var(--taku); }
-.size:hover { transform: translate3d(0, -2px, 0); }
+.size[aria-pressed="true"] { background: var(--ink-inv); color: var(--ground-inv); }
+/* Was a 2px translate ALONE: invisible to anyone who cannot perceive a 2px
+   shift, and reduced to instant under reduced motion. The ring is the real
+   affordance; the lift is the flourish on top. */
+.size:hover { transform: translate3d(0, -2px, 0); box-shadow: inset 0 0 0 2px currentColor; }
+.size:active { transform: translate3d(0, 0, 0); }
 
-/* On the rubbing ground every paper-scoped value has to invert. --sumi-12 is
-   a near-black hairline and --sumi-wash a dark grey: both vanish against
-   --taku. They are legible in the grid and invisible here, which is exactly
+/* On the rubbing ground every paper-scoped value has to invert. --rule-c is
+   a near-black hairline and --ink-2 a dark grey: both vanish against
+   --ground-inv. They are legible in the grid and invisible here, which is exactly
    the kind of thing that only shows up when you look at the real render. */
-.qv .hanko--ghost { box-shadow: inset 0 0 0 var(--rule) #DCD5C659; }
-.qv .price--was   { color: #DCD5C68F; }
+.qv .hanko--ghost { box-shadow: inset 0 0 0 var(--rule) var(--ink-inv-35); }
+.qv .price--was   { color: var(--ink-inv-55); }
 .qv .price--was::after { background: var(--accent-hot, var(--alert)); }
-.qv .micro, .qv .mono { color: #DCD5C6C7; }
+.qv .micro, .qv .mono { color: var(--ink-inv-80); }
 
 /* --- Drawer --------------------------------------------------------------- */
 .drawer {
   position: fixed; inset: 0 0 0 auto;
   width: min(430px, 100%); height: 100%;
-  background: var(--washi); color: var(--sumi);
+  background: var(--ground); color: var(--ink);
   display: flex; flex-direction: column;
   transform: translate3d(100%, 0, 0);
   transition: transform var(--d-turn) var(--e-brush);
@@ -264,24 +315,32 @@ dialog[open] .drawer { transform: translate3d(0, 0, 0); }
 .drawer__head {
   display: flex; align-items: center; gap: 1rem;
   padding: 1.1rem var(--gutter);
-  border-bottom: var(--rule) solid var(--sumi-12);
+  border-bottom: var(--rule) solid var(--rule-c);
 }
 .drawer__tabs { display: flex; gap: 0.25rem; margin-right: auto; }
 .drawer__tab {
   font-family: var(--mono); font-size: var(--t-xs);
   letter-spacing: var(--track-mono); text-transform: uppercase;
   padding: 0.55rem 0.7rem; min-height: 44px;
-  color: var(--sumi-wash);
+  color: var(--ink-2);
 }
-.drawer__tab[aria-selected="true"] { color: var(--sumi); box-shadow: inset 0 -2px 0 var(--shu); }
+.drawer__tab:hover { color: var(--ink); }
+.drawer__tab[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--brand); }
 .drawer__body { flex: 1; overflow: auto; overscroll-behavior: contain; padding: var(--gutter); }
-.drawer__foot { border-top: var(--rule) solid var(--sumi-12); padding: var(--gutter); }
+.drawer__foot { border-top: var(--rule) solid var(--rule-c); padding: var(--gutter); }
 
-.line { display: flex; gap: 0.9rem; padding-block: 0.9rem; border-bottom: var(--rule) solid var(--sumi-12); }
+.line { display: flex; gap: 0.9rem; padding-block: 0.9rem; border-bottom: var(--rule) solid var(--rule-c); }
 .line__thumb { width: 62px; aspect-ratio: 3 / 4; flex: none; object-fit: cover; background: var(--plate); }
 .line__mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 .qty { display: flex; align-items: center; gap: 0.1rem; }
-.qty button { width: 32px; height: 32px; display: grid; place-items: center; box-shadow: inset 0 0 0 var(--rule) var(--sumi-12); }
+/* 44px, like every other control. This was 32px — the only control on the
+   site under the floor, and the one where a mis-tap changes an order. */
+.qty button {
+  width: 44px; height: 44px; display: grid; place-items: center;
+  box-shadow: inset 0 0 0 var(--rule) var(--rule-c);
+}
+.qty button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.qty button:active { background: color-mix(in srgb, currentColor 18%, transparent); }
 .qty output { min-width: 30px; text-align: center; font-family: var(--mono); font-size: var(--t-sm); }
 
 .empty { display: grid; gap: 0.7rem; place-items: start; padding-block: 2.5rem; }
@@ -305,7 +364,7 @@ dialog[open] .drawer { transform: translate3d(0, 0, 0); }
 /* --- SFX katakana · the snap register ------------------------------------- */
 .sfx {
   font-family: var(--jp-gothic); font-size: var(--t-lg);
-  color: var(--accent-ink, var(--sumi));
+  color: var(--accent-ink, var(--ink));
   writing-mode: vertical-rl;
   pointer-events: none; user-select: none;
 }
@@ -314,7 +373,7 @@ dialog[open] .drawer { transform: translate3d(0, 0, 0); }
 .shuchusen {
   position: fixed; inset: 0; z-index: 150; pointer-events: none;
   background: repeating-conic-gradient(from 0deg at 50% 50%,
-    var(--shu) 0deg 0.7deg, transparent 0.7deg 3.4deg);
+    var(--brand) 0deg 0.7deg, transparent 0.7deg 3.4deg);
   mask-image: radial-gradient(circle at 50% 50%, transparent 24%, #000 62%);
   -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 24%, #000 62%);
   animation: shuchusen var(--d-cut) var(--e-exit) forwards;

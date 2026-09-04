@@ -38,7 +38,7 @@ export function press(node) {
       position: 'fixed', zIndex: '140', pointerEvents: 'none',
       left: `${box.left + box.width * 0.16}px`, top: `${box.bottom - 4}px`,
       width: '4px', height: '4px', borderRadius: '52% 44% 50% 46%',
-      background: d.getPropertyValue('--shu').trim() || '#C1372B'
+      background: d.getPropertyValue('--brand').trim() || '#C1372B'
     });
     document.body.append(fleck);
     fleck.animate(

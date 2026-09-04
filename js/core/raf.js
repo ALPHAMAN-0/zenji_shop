@@ -37,9 +37,25 @@ export const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
 /** Progress of `y` through [from, to], clamped to 0..1. */
 export const progress = (y, from, to) => clamp((y - from) / (to - from || 1));
 
+const measurers = new Set();
+
+/** Register a resize-time measurement. Runs immediately, then before every
+    frame that follows a resize or orientationchange.
+
+    This exists because rule 2 above forbids layout reads inside a frame, and
+    three effects were breaking it anyway for want of anywhere else to put
+    them. One hook, on the listeners this module already owns, instead of a
+    resize listener per effect. Returns an unsubscribe function. */
+export function onMeasure(fn) {
+  measurers.add(fn);
+  try { fn(ctx); } catch { /* a bad measurer never blocks the rest */ }
+  return () => measurers.delete(fn);
+}
+
 function measureViewport() {
   ctx.vh = window.innerHeight;
   ctx.vw = window.innerWidth;
+  for (const f of measurers) { try { f(ctx); } catch { /* keep going */ } }
   dirty = true;
   schedule();
 }
