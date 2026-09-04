@@ -20,6 +20,12 @@
 
 <link rel="icon" href="image/wm_logo.webp" type="image/webp">
 <link rel="preload" as="image" href="image/hero-poster.webp" fetchpriority="high">
+<!-- The display face only. crossorigin is REQUIRED: fonts are always fetched
+     in CORS mode, so a preload without it does not match the later request and
+     the file is simply downloaded twice. Anton alone, because the hero
+     headline is the first thing on the page and the only place a swap would be
+     visible; the mono faces can swap unnoticed. -->
+<link rel="preload" as="font" type="font/woff2" href="font/anton-400.woff2" crossorigin>
 
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">

@@ -37,29 +37,28 @@
    Until font/*.woff2 are present the stacks below fall through to local
    condensed and monospace faces, so the site is complete without them.
    ========================================================================= */
+/* No unicode-range on any of these. Splitting a family across subset files is
+   the only thing that attribute buys, and there is one file per face here.
+   Declaring a range that does not match the file's real coverage is a silent
+   bug: the browser would refuse to use the font for a codepoint the file
+   actually has, or claim one it does not. Without it, each face is used for
+   whatever it contains and falls back per glyph for the rest — which is what
+   makes the macron in "taiyo" (U+014D, latin-ext) degrade gracefully rather
+   than mysteriously. */
 @font-face {
   font-family: 'Anton';
   src: url('../font/anton-400.woff2') format('woff2');
   font-weight: 400; font-style: normal; font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
-                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
-                 U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: 'IBM Plex Mono';
   src: url('../font/plex-mono-400.woff2') format('woff2');
   font-weight: 400; font-style: normal; font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
-                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
-                 U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: 'IBM Plex Mono';
   src: url('../font/plex-mono-500.woff2') format('woff2');
   font-weight: 500; font-style: normal; font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
-                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
-                 U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 :root {

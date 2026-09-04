@@ -105,6 +105,15 @@ for f in index.html collection.html lookbook.html story.html; do
 done
 [ $bad -eq 0 ] && ok "boot script matches store.js prefix ($prefix)" || note "storage prefix drift"
 
+# 10. A font preload MUST carry crossorigin. Fonts are fetched in CORS mode, so
+#     a preload without it never matches the real request and the file is
+#     downloaded twice — a "optimisation" that costs bytes instead of saving
+#     them, and is invisible unless you read the network panel.
+hits=$(grep -rn 'rel="preload"[^>]*as="font"' --include='*.html' . --exclude-dir=.git 2>/dev/null \
+  | grep -v crossorigin || true)
+if [ -n "$hits" ]; then echo "$hits"; note "font preload missing crossorigin"
+else ok "font preloads carry crossorigin"; fi
+
 echo
 if [ $fail -eq 0 ]; then printf '\033[32mPASS\033[0m — safe to push\n'; else printf '\033[31mFAILED\033[0m\n'; fi
 exit $fail
