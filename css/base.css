@@ -1,0 +1,159 @@
+/* ============================================================================
+   base.css · reset, guards, focus, utilities.
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+  /* Anchors must clear the fixed nav. WCAG 2.4.11. */
+  scroll-padding-top: calc(var(--header-h) + 1.5rem);
+}
+
+body {
+  margin: 0;
+  background: var(--washi);
+  color: var(--sumi);
+  font-family: var(--body);
+  font-size: var(--t-base);
+  line-height: 1.65;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  hanging-punctuation: first last;
+}
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+ul[class], ol[class] { list-style: none; margin: 0; padding: 0; }
+
+/* Sumi has no bold. Emphasis is size and ink density, never weight. */
+h1, h2, h3, h4, strong, b { font-weight: 400; }
+
+img, video, svg { display: block; max-width: 100%; }
+img { height: auto; background-color: var(--plate); }
+
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+
+::selection { background: var(--shu); color: var(--washi); }
+
+/* --- The .js-ready law -----------------------------------------------------
+   Every hidden-until-revealed rule is scoped inside .js-ready, which the
+   inline boot script adds as its FIRST statement. If JS throws, is blocked,
+   or an observer never fires, the page renders as a complete static
+   ink-on-paper document. A blank site is a catastrophic AND invisible
+   failure mode; this costs one class.
+   ------------------------------------------------------------------------ */
+.no-js [data-reveal] { --front: 110%; }
+
+/* --- Reveal contract ------------------------------------------------------
+   Elements opt in with [data-reveal]. The stagger index comes from --i,
+   the interval from --s, and the anti-machine jitter from --j.
+   ------------------------------------------------------------------------ */
+[data-reveal] { --s: var(--s-line); --i: 0; }
+
+/* Hand-authored 12-value jitter. NEVER Math.random(): random clusters, reads
+   as noise, and makes the page animate differently on every reload, which is
+   unauthored by definition. 12 values, 12 grid tiles — the cycle lands. */
+[data-stagger] > *:nth-child(12n + 1)  { --j:  0ms; }
+[data-stagger] > *:nth-child(12n + 2)  { --j: 11ms; }
+[data-stagger] > *:nth-child(12n + 3)  { --j:  4ms; }
+[data-stagger] > *:nth-child(12n + 4)  { --j: 19ms; }
+[data-stagger] > *:nth-child(12n + 5)  { --j:  7ms; }
+[data-stagger] > *:nth-child(12n + 6)  { --j: 26ms; }
+[data-stagger] > *:nth-child(12n + 7)  { --j:  2ms; }
+[data-stagger] > *:nth-child(12n + 8)  { --j: 14ms; }
+[data-stagger] > *:nth-child(12n + 9)  { --j: 22ms; }
+[data-stagger] > *:nth-child(12n + 10) { --j:  9ms; }
+[data-stagger] > *:nth-child(12n + 11) { --j: 17ms; }
+[data-stagger] > *:nth-child(12n)      { --j:  6ms; }
+
+/* --- Focus ----------------------------------------------------------------
+   Two rings of opposite luminance so the pair survives ANY backdrop — paper,
+   ink, or a photograph. Never transitioned, never suppressed.
+   ------------------------------------------------------------------------ */
+:focus-visible {
+  outline: 2px solid var(--focus-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--focus-glow);
+  border-radius: 1px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Inside overflow:hidden / contain:paint ancestors a positive outline-offset
+   is CLIPPED, so the ring is drawn inward with a pseudo-element instead. */
+.clip-focus:focus-visible { outline: none; box-shadow: none; }
+.clip-focus:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid var(--focus-ink);
+  box-shadow: 0 0 0 3px var(--focus-glow);
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* A keyboard user must never be able to tab to something they cannot see. */
+[data-reveal]:focus-within,
+[data-reveal]:has(:focus-visible) {
+  --front: 110% !important;
+  transition: none !important;
+}
+
+/* --- Utilities ------------------------------------------------------------ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 200;
+  transform: translateY(-120%);
+  background: var(--sumi);
+  color: var(--washi);
+  padding: 0.85rem 1.4rem;
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+}
+.skip-link:focus-visible { transform: translateY(0); }
+
+.mono {
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+}
+.micro {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+}
+.jp { font-family: var(--jp); font-feature-settings: "palt" 1; }
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* --- Forced colors ------------------------------------------------------- */
+@media (forced-colors: active) {
+  .fiber, .splat, canvas, .deckle { display: none !important; }
+  :focus-visible { outline: 3px solid Highlight; }
+  .swatch { forced-color-adjust: none; }
+}

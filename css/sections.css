@@ -1,0 +1,243 @@
+/* ============================================================================
+   sections.css · hero, byobu, manifesto, flood, lookbook, footer.
+   ========================================================================= */
+
+/* --- Hero 一筆 -------------------------------------------------------------
+   One colossal brush stroke paints across the viewport, and INSIDE it is the
+   laneway footage as a warm monochrome ink wash. svh, never vh: the small
+   viewport does not change as the address bar moves, so there is zero reflow
+   while scrolling. */
+.hero {
+  position: relative;
+  min-height: 88svh;
+  display: grid;
+  align-items: end;
+  isolation: isolate;              /* REQUIRED: multiply would otherwise punch
+                                      through to the page root */
+  overflow: clip;
+  padding-block: clamp(2rem, 6vh, 5rem) clamp(2.5rem, 7vh, 6rem);
+}
+
+/* The stroke silhouette lives on a STATIC WRAPPER so the animated element
+   itself never exceeds two mask layers. */
+.hero__stroke {
+  position: absolute; inset: -2% -1%;
+  z-index: 0;
+  contain: paint;
+  -webkit-mask-image: var(--stroke-svg);
+  mask-image: var(--stroke-svg);
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  --stroke-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none' viewBox='0 0 100 100'%3E%3Cpath fill='%23000' d='M0 16C14 7 30 4 47 6c19 2 33 9 53 6v79c-19 3-35-3-54-5-17-2-32 1-46 8z'/%3E%3C/svg%3E");
+}
+.hero__media { position: absolute; inset: 0; }
+.hero__media img,
+.hero__media video {
+  width: 100%; height: 100%; object-fit: cover;
+  /* One filter chain, quantized 1/12 by the rAF loop so it repaints rarely. */
+  filter: grayscale(1) sepia(var(--v-sep, .34)) contrast(var(--v-con, 1.18))
+          brightness(var(--v-bri, 1.02));
+  mix-blend-mode: multiply;
+}
+
+/* Ink needs paper. The stroke's lower third soaks back into washi so the
+   headline always lands on ground it can actually be read against — a dark
+   serif over a busy mid-tone photograph is unreadable, and a drop-shadow
+   would be the cheap fix that makes it look like a stock template. */
+.hero__scrim {
+  position: absolute; inset: auto 0 -1px 0; height: 74%;
+  z-index: 1; pointer-events: none;
+  background: linear-gradient(to bottom,
+    #EFE9DC00 0%, #EFE9DCA6 26%, #EFE9DCE6 50%, #EFE9DCFA 72%, var(--washi) 100%);
+}
+.hero__body { position: relative; z-index: 2; }
+
+.hero__title {
+  font-family: var(--display);
+  font-size: var(--t-display);
+  line-height: 0.86;
+  letter-spacing: var(--track-disp);
+  text-transform: uppercase;
+  display: flex; flex-direction: column;
+}
+/* Per-word wrappers. The stagger is per <span> translate3d + a bleed front —
+   NEVER letter-spacing, which reshapes the entire text run every frame. */
+.hero__word { display: block; overflow: visible; }
+
+.hero__cta { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-top: clamp(1.5rem, 4vh, 2.75rem); }
+
+/* On a narrow screen a full-height stroke crops the 16:9 footage to about 30%
+   of its width — you end up looking at a shirt, not a laneway. So the stroke
+   becomes a square band in normal flow and the headline sits on clean paper
+   beneath it, which is both more legible and more on-brand than a hard crop. */
+@media (max-width: 720px) {
+  .hero {
+    min-height: 0;
+    align-items: start;
+    gap: clamp(1.6rem, 5vh, 2.6rem);
+    padding-block: 0 clamp(2.5rem, 7vh, 4rem);
+  }
+  .hero__stroke {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  .hero__scrim { display: none; }
+  .hero__title { font-size: clamp(3rem, 15vw, 5rem); }
+}
+
+/* --- Byobu 屏風 · the Origin Drop folding screen ---------------------------
+   Four leaves swing from a steep angle flat to the viewer on an alternating
+   hinge. Four transforms, ZERO layout: no sticky, no scrub, no wheel handler. */
+.byobu {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+.leaf {
+  position: relative;
+  transform: rotateY(calc((1 - var(--lp, 0)) * var(--swing, 38deg)));
+  transform-origin: left center;
+  transition: transform var(--d-stroke) var(--e-brush);
+  backface-visibility: hidden;
+}
+.leaf:nth-child(even) { --swing: -38deg; transform-origin: right center; }
+.leaf.is-in { --lp: 1; }
+.leaf__frame {
+  display: block;              /* <a> is inline; an inline box ignores aspect-ratio */
+  position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--plate);
+}
+.leaf__frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* The fold seam. A hairline, not a gradient panel. */
+.leaf::after {
+  content: ""; position: absolute; top: 0; bottom: 0; right: -1px; width: 1px;
+  background: linear-gradient(var(--washi-3), #16130F26, var(--washi-3));
+}
+.leaf:last-child::after { display: none; }
+/* The caption carries the kanji now. It still lifts into the colorway as the
+   leaf comes flat — the moment survives, it just no longer fights the art. */
+.leaf__cap { padding-top: .85rem; display: flex; flex-direction: column; gap: .3rem; }
+.leaf__kanji {
+  font-family: var(--jp); font-size: var(--t-md);
+  color: var(--sumi-wash);
+  transition: color var(--d-set) var(--e-soak);
+}
+.leaf.is-in .leaf__kanji { color: var(--accent-ink, var(--sumi)); }
+
+/* The seal, and the drip that runs from its base. */
+.leaf__seal {
+  position: absolute; left: 7%; bottom: 7%; z-index: 3;
+  width: 22px; height: 22px; background: var(--shu);
+  box-shadow: inset 0 0 0 2px #EFE9DC59;
+}
+.leaf__seal::after {
+  content: ""; position: absolute; left: 45%; top: 100%; width: 2px; height: 0;
+  background: var(--shu);
+}
+.leaf.is-in .leaf__seal::after { animation: drip var(--d-drip) var(--e-drip) forwards; }
+
+@media (max-width: 900px) {
+  .byobu { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; perspective: none; }
+  .leaf { transform: none; }
+  .leaf::after { display: none; }
+}
+
+/* --- Manifesto ------------------------------------------------------------ */
+.manifesto { background: var(--washi-2); }
+.manifesto__body {
+  font-family: var(--display);
+  font-size: var(--t-lg);
+  line-height: 1.42;
+  max-width: 26ch;
+}
+.manifesto__grid {
+  display: grid; gap: clamp(1.5rem, 4vw, 4rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) { .manifesto__grid { grid-template-columns: 0.8fr 1.2fr; } }
+
+/* --- Flood 墨流し ----------------------------------------------------------
+   Black ink floods up with a torn, speckled front. The headline sitting on
+   the boundary INVERTS as the ink passes over it — mid-word, no flicker, no
+   class toggle. That is difference blending, so it is perfectly frame-synced
+   because it is compositing, not scripting. */
+.flood-zone { position: relative; isolation: isolate; }   /* REQUIRED for difference */
+.flood-zone__ink {
+  position: absolute; inset: 0; z-index: 1;
+  background: var(--taku);
+  contain: strict;
+  pointer-events: none;
+}
+.flood-zone__type {
+  position: relative; z-index: 2;
+  color: var(--washi);
+  mix-blend-mode: difference;
+  font-family: var(--display);
+  font-size: var(--t-2xl);
+  line-height: 0.94;
+  text-transform: uppercase;
+}
+
+/* --- Lookbook ------------------------------------------------------------- */
+.look {
+  position: relative;
+  background: var(--taku); color: var(--taku-fg);
+  overflow: clip;
+}
+.look__panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
+.look__panel { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: #241f1a; }
+.look__panel img {
+  position: absolute; inset: -8% 0;
+  width: 100%; height: 116%; object-fit: cover;
+  transform: translate3d(0, var(--py, 0px), 0);
+}
+@media (max-width: 760px) { .look__panels { grid-template-columns: 1fr; } }
+
+.look__wide { position: relative; aspect-ratio: 1898 / 829; overflow: hidden; background: #2E2924; }
+.look__wide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* --- Footer ink basin ----------------------------------------------------- */
+.footer__canvas {
+  position: absolute; inset: auto 0 0 0; height: 210px;
+  width: 100%; pointer-events: none; opacity: 0.5;
+}
+.footer__mark {
+  width: 74px; height: 74px;
+  background: var(--taku-fg);
+  -webkit-mask-image: url(../image/wm_logo.webp);
+  mask-image: url(../image/wm_logo.webp);
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
+
+/* --- Preloader 墨磨り ------------------------------------------------------ */
+.plate {
+  position: fixed; inset: 0; z-index: 300;
+  background: var(--washi);
+  display: grid; place-items: center;
+  transition: transform var(--d-bleed) var(--e-exit);
+}
+.plate[data-done] { transform: translate3d(0, -101%, 0); }
+.plate__mark {
+  width: clamp(96px, 18vw, 168px); aspect-ratio: 1;
+  background: var(--sumi);
+  --fill: 0%;
+  -webkit-mask-image: url(../image/wm_logo.webp);
+  mask-image: url(../image/wm_logo.webp);
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
+/* The monogram is PAINTED IN behind a travelling wet edge, not revealed. */
+.plate__mark::before {
+  content: ""; display: block; width: 100%; height: 100%;
+  background: var(--sumi);
+}
+.plate__stamp {
+  width: 34px; height: 34px; background: var(--shu);
+  transform: scale(0);
+}

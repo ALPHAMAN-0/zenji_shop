@@ -1,0 +1,129 @@
+/* ============================================================================
+   ZENJI — 墨 SUMI
+   tokens.css · :root only. Palette, type, easing, duration, stagger.
+   Nothing in this file selects anything but :root. No components live here.
+   ========================================================================= */
+
+/* --- Registered custom properties -----------------------------------------
+   These MUST be registered to be animatable. --plate is the only inherited
+   one, and it is only ever transitioned on a card — never on :root, where it
+   would re-resolve the entire document subtree every frame.
+   ------------------------------------------------------------------------ */
+@property --front { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@property --tail  { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@property --fill  { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@property --hole  { syntax: '<percentage>'; inherits: false; initial-value: 12%; }
+@property --lp    { syntax: '<number>';     inherits: false; initial-value: 0; }
+@property --ang   { syntax: '<angle>';      inherits: false; initial-value: 100deg; }
+@property --plate { syntax: '<color>';      inherits: true;  initial-value: #D2D2D2; }
+
+:root {
+  /* --- Ground and ink ---------------------------------------------------- */
+  --washi:      #EFE9DC;   /* page ground, warm paper                        */
+  --washi-2:    #E4DCCB;   /* toned paper: cards, nav strip, manifesto band  */
+  --washi-3:    #D3C9B4;   /* paper shadow: deckle edges, fold seams         */
+
+  --sumi:       #16130F;   /* the ink. 15.3:1 on washi. never #000           */
+  --sumi-wash:  #4A443B;   /* half-dry. headlines land here. 7.9:1           */
+  --sumi-12:    #16130F1F; /* hairlines, 1px borders, grid lines             */
+
+  --taku:       #14110E;   /* stone-rubbing black: marquee, lookbook, footer */
+  --taku-fg:    #DCD5C6;   /* type on rubbing sections. 12.9:1. never white  */
+
+  --shu:        #C1372B;   /* hanko cinnabar. THE single brand accent. 4.5:1 */
+  --shu-wet:    #E04A2F;   /* 700ms flash on a fresh stamp, then it sets     */
+  --shu-live:   var(--shu);/* section accent slot, briefly overridden        */
+
+  --alert:      #E5322D;   /* SALE strike + tag FILL. graphic only, 3.6:1    */
+  --alert-ink:  #A81E17;   /* SALE tag TEXT. 6.1:1 on washi                  */
+
+  --focus-ink:  #16130F;
+  --focus-glow: #C1372B;
+
+  /* --- Type -------------------------------------------------------------- */
+  /* Zero webfonts. Every stack resolves locally on mac / win / linux.       */
+  --display: "Hoefler Text", "Baskerville", "Bodoni 72", "Big Caslon",
+             "Palatino Linotype", Palatino, Georgia, "Liberation Serif",
+             "DejaVu Serif", "Times New Roman", serif;
+  --mono:    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+             "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+  --body:    var(--mono);
+  --jp:      "Hiragino Mincho ProN", "Hiragino Mincho Pro", "YuMincho",
+             "Yu Mincho", "游明朝", "MS PMincho", "MS Mincho", "Noto Serif JP",
+             "Noto Serif CJK JP", "IPAexMincho", "TakaoPMincho", serif;
+  --jp-gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo",
+               "Noto Sans JP", "Noto Sans CJK JP", "IPAexGothic", sans-serif;
+
+  /* Fluid scale, 320 -> 1600px. No step is bold: sumi has no bold.          */
+  --t-xs:      clamp(0.6875rem, 0.665rem + 0.11vw,  0.75rem);
+  --t-sm:      clamp(0.75rem,   0.723rem + 0.14vw,  0.8125rem);
+  --t-base:    clamp(0.9375rem, 0.907rem + 0.15vw,  1.0625rem);
+  --t-md:      clamp(1.0625rem, 0.977rem + 0.43vw,  1.25rem);
+  --t-lg:      clamp(1.375rem,  1.132rem + 1.22vw,  2rem);
+  --t-xl:      clamp(2rem,      1.418rem + 2.91vw,  3.5rem);
+  --t-2xl:     clamp(2.75rem,   1.489rem + 6.30vw,  6rem);
+  --t-display: clamp(3.5rem,    0.588rem + 14.56vw, 11rem);
+
+  --track-mono:  0.22em;   /* the technical-brutalist voice lives here       */
+  --track-micro: 0.34em;
+  --track-disp:  0.01em;
+
+  /* --- Easing. Six curves, one job each. --------------------------------- */
+  --e-brush: cubic-bezier(.16, .84, .28, 1);    /* the load stroke           */
+  --e-soak:  cubic-bezier(.33, 0,   .12, 1);    /* the absorb                */
+  --e-flick: cubic-bezier(.2,  1.6, .3,  1);    /* splatter / stamp, ~11% OS */
+  --e-drip:  cubic-bezier(.55, .02, .75, .35);  /* gravity. ease-IN only     */
+  --e-snap:  cubic-bezier(.16, 1.2, .24, 1);    /* shonen register, ~4% OS   */
+  --e-exit:  cubic-bezier(.4,  0,   .9,  .35);  /* every disappearance       */
+
+  /* --- Duration. The complete legal set. --------------------------------- *
+   * There is NO token between 261ms and 619ms. That dead band is structural:
+   * it is what makes the generic 400ms fade impossible to type, rather than
+   * merely discouraged. No literal ms value may appear anywhere else.       */
+  --d-flick:    90ms;
+  --d-stamp:   200ms;
+  --d-snap:    220ms;
+  --d-cut:     260ms;
+  /* ---------------- DEAD BAND 261-619ms. NO TOKEN EXISTS ----------------- */
+  --d-turn:    620ms;
+  --d-soak:    700ms;
+  --d-bleed:   900ms;
+  --d-bleed-lg:1100ms;
+  --d-set:    1200ms;
+  --d-stroke: 1400ms;
+  --d-drip:   1900ms;
+  --d-ui:      160ms;  /* motion-toggle thumb only. survives reduced mode.   */
+
+  /* --- Stagger ----------------------------------------------------------- */
+  --s-word:    130ms;
+  --s-line:     90ms;
+  --s-card:     70ms;
+  --s-splat:    40ms;
+  --s-bracket:  30ms;
+  --j: 0ms;  /* per-child jitter, overridden by the 12-value list in base.css */
+
+  /* --- Layout ------------------------------------------------------------ */
+  --header-h: 62px;
+  --gutter:   clamp(1rem, 0.6rem + 2vw, 2.75rem);
+  --measure:  68ch;
+  --maxw:     1560px;
+  --rule:     1px;
+
+  /* --- The fiber tile ----------------------------------------------------
+     feTurbulence, rasterised ONCE as a data-URI and reused as a mask layer.
+     Baked, never live: animating turbulence is a full repaint every frame.
+     This is what gives every bleed edge its speckle instead of a clean wipe.
+     -------------------------------------------------------------------- */
+  --fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch' seed='7'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.2 0 0 0 0.32'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23f)'/%3E%3C/svg%3E");
+  --fiber-size: 220px 220px;
+
+  /* --- Ink density. Scales canvas/particle work down on weak hardware. --- */
+  --ink-density: 1;
+
+  color-scheme: light;
+}
+
+/* Coarse pointers get less decorative work by default. */
+@media (pointer: coarse) {
+  :root { --ink-density: 0.6; }
+}

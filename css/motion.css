@@ -1,0 +1,239 @@
+/* ============================================================================
+   motion.css · LAST in the cascade, on purpose. Motion must win.
+   Contains: the .bleed primitive + its four-tier gate, every @keyframes,
+   and the complete reduced-motion block.
+   ========================================================================= */
+
+/* ============================================================================
+   THE .bleed PRIMITIVE — the load-bearing wall
+   ----------------------------------------------------------------------------
+   One law: nothing fades, everything bleeds. A single registered property
+   --front drives a travelling edge. Where that edge is soft, a baked
+   turbulence tile multiplies against it and breaks it into speckle, so ink
+   appears to soak into paper fibre rather than wipe cleanly.
+
+   The tiers are ordered so the BASELINE IS SAFE and the speckle is the
+   enhancement. This matters: `mask-composite` does not degrade in Safari when
+   prefixing is wrong — it silently DELETES the element, and it looks perfect
+   in Chrome. So Tier A is gated on the STANDARD property only. Engines that
+   fail that test land on a plain gradient mask (Tier B) or a clip-path wipe
+   (Tier C), both of which are universally safe.
+
+   NOTE: no tier ever falls back to an opacity fade. That would collapse the
+   entire direction into the one thing it exists to avoid.
+   ========================================================================= */
+
+/* --- Tier C · baseline. clip-path wipe. Works everywhere, no mask at all. - */
+.bleed {
+  --front: 0%;
+  --tail: 0%;
+  --ang: 100deg;
+  clip-path: inset(0 calc(100% - var(--front)) 0 0);
+  transition: clip-path var(--d-bleed) var(--e-brush);
+}
+.bleed.is-in { --front: 112%; }
+
+/* --- Tier B · single-layer gradient mask. Soft edge, no speckle. --------- */
+@supports (mask-image: linear-gradient(#000, #000)) {
+  .bleed {
+    clip-path: none;
+    -webkit-mask-image: linear-gradient(
+      var(--ang),
+      transparent 0 calc(var(--tail) - 9%),
+      #000 var(--tail) calc(var(--front) - 14%),
+      transparent var(--front));
+    mask-image: linear-gradient(
+      var(--ang),
+      transparent 0 calc(var(--tail) - 9%),
+      #000 var(--tail) calc(var(--front) - 14%),
+      transparent var(--front));
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transition: --front var(--d-bleed) var(--e-brush),
+                --tail  var(--d-bleed) var(--e-brush);
+  }
+}
+
+/* --- Tier A · fiber INTERSECT gradient. The real thing. ------------------ */
+@supports (mask-composite: intersect) {
+  .bleed {
+    -webkit-mask-image: var(--fiber), linear-gradient(
+      var(--ang),
+      transparent 0 calc(var(--tail) - 9%),
+      #000 var(--tail) calc(var(--front) - 14%),
+      transparent var(--front));
+    mask-image: var(--fiber), linear-gradient(
+      var(--ang),
+      transparent 0 calc(var(--tail) - 9%),
+      #000 var(--tail) calc(var(--front) - 14%),
+      transparent var(--front));
+    -webkit-mask-size: var(--fiber-size), 100% 100%;
+    mask-size: var(--fiber-size), 100% 100%;
+    -webkit-mask-repeat: repeat, no-repeat;
+    mask-repeat: repeat, no-repeat;
+    /* Exactly TWO layers. Never three with differing mask-size — that is
+       where WebKit's compositing path is genuinely buggy. */
+    mask-composite: intersect;
+  }
+}
+
+/* --- The card front is a bleed RUN IN REVERSE ------------------------------
+   It rests PRESENT at 112% and dissolves to 0% on hover, revealing the back
+   image beneath. These declarations must live here, after .bleed, or .bleed's
+   own `--front: 0%` and its transition shorthand would win on source order
+   and the card would start invisible. */
+.card__img--front {
+  --front: 112%;
+  --tail: 0%;
+  transition: --front var(--d-turn) var(--e-exit);
+}
+.js-ready .card[data-ready]:hover .card__img--front,
+.js-ready .card[data-ready]:focus-within .card__img--front,
+.js-ready .card.is-turned[data-ready] .card__img--front {
+  --front: 0%;
+  transition-timing-function: cubic-bezier(.22, .61, .24, 1);
+}
+
+/* Tier D is implicit: if @property is unsupported, --front never animates,
+   .is-in still sets it, and the element simply appears. Never blank. */
+
+/* Direction variants. --ang is registered, so it interpolates. */
+.bleed--up    { --ang:   0deg; }
+.bleed--down  { --ang: 180deg; }
+.bleed--left  { --ang: 280deg; }
+.bleed--diag  { --ang: 115deg; }
+
+.bleed--slow  { transition-duration: var(--d-stroke); }
+.bleed--fast  { transition-duration: var(--d-turn); }
+
+/* --- Reveal ---------------------------------------------------------------
+   The observer adds .is-in. Delay carries the stagger index, interval and
+   the hand-authored jitter. */
+[data-reveal] {
+  transition-delay: calc(var(--i) * var(--s) + var(--j));
+}
+
+/* Ink darkens as it dries: every headline lands half-dry and sets. */
+.dry { color: var(--sumi-wash); transition: color var(--d-set) var(--e-soak); }
+.dry.is-in { color: var(--sumi); }
+
+/* An element that BOTH bleeds and dries needs a single combined transition
+   list. Two `transition` shorthands in two rules do not merge — the later one
+   silently replaces the earlier, which would cost the element its --front
+   animation and leave it simply appearing. */
+.bleed.dry {
+  transition: --front var(--d-bleed) var(--e-brush),
+              --tail  var(--d-bleed) var(--e-brush),
+              clip-path var(--d-bleed) var(--e-brush),
+              color   var(--d-set)   var(--e-soak);
+}
+
+/* ============================================================================
+   KEYFRAMES
+   ========================================================================= */
+
+/* The marquee floor. steps() so the rail never sub-pixel-shimmers at rest. */
+@keyframes rail {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Hanko press. WAAPI drives the real one; this is the keyboard-activation path. */
+@keyframes stamp {
+  0%   { transform: scale(1.55) rotate(-7deg); }
+  62%  { transform: scale(0.97) rotate(1.5deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* The drip. ease-IN only — it accelerates, then simply stops.
+   That is what gravity does, and it is the detail people notice
+   without knowing why. */
+@keyframes drip {
+  from { height: 0; }
+  to   { height: 26px; }
+}
+
+/* Splatter fleck. transform-only, six per card, 40ms apart. */
+@keyframes fleck {
+  from { transform: translate3d(0, 0, 0) scale(0.2); }
+  to   { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
+}
+
+/* The single steps(1) impact frame that carries the shonen register. */
+@keyframes impact {
+  0%, 61%  { transform: translate3d(0, 0, 0); }
+  62%, 74% { transform: translate3d(0, -3px, 0) scale(1.04); }
+  100%     { transform: translate3d(0, 0, 0); }
+}
+
+/* shūchūsen — concentrated lines. Fires exactly twice on the whole site,
+   node removed on finish. The one conic gradient, alive for 260ms. */
+@keyframes shuchusen {
+  from { transform: scale(0.55); opacity: 1; }
+  to   { transform: scale(1.9);  opacity: 0; }
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   ----------------------------------------------------------------------------
+   Never `*{animation:none!important}`. A blanket nuke kills the loader's
+   meaning, breaks every transitionend handler the close sequences depend on,
+   and cannot be overridden by a user who explicitly asked for full motion.
+
+   Instead: swap the TOKEN VALUES. Three mutually exclusive selectors, and
+   1ms rather than 0ms so transitionend still fires.
+
+   Under reduced motion the site still looks exactly like ink on paper — it
+   simply does not move. Fronts at 110%, splatter at final positions, the CTA
+   drip drawn static at its full 26px (it is design, not animation), byobu
+   leaves flat, seams and deckle borders intact. This direction degrades
+   better than any kinetic alternative; that advantage is not squandered on a
+   lazy display:none.
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) {
+    --d-flick: 1ms; --d-stamp: 1ms; --d-snap: 1ms; --d-cut: 1ms;
+    --d-turn: 1ms; --d-soak: 1ms; --d-bleed: 1ms; --d-bleed-lg: 1ms;
+    --d-set: 1ms; --d-stroke: 1ms; --d-drip: 1ms;
+    --s-word: 0ms; --s-line: 0ms; --s-card: 0ms;
+    --s-splat: 0ms; --s-bracket: 0ms; --j: 0ms;
+    /* --d-ui is deliberately NOT reduced: the motion toggle's own thumb must
+       still read as a switch being thrown. */
+  }
+}
+
+:root[data-motion="reduced"] {
+  --d-flick: 1ms; --d-stamp: 1ms; --d-snap: 1ms; --d-cut: 1ms;
+  --d-turn: 1ms; --d-soak: 1ms; --d-bleed: 1ms; --d-bleed-lg: 1ms;
+  --d-set: 1ms; --d-stroke: 1ms; --d-drip: 1ms;
+  --s-word: 0ms; --s-line: 0ms; --s-card: 0ms;
+  --s-splat: 0ms; --s-bracket: 0ms; --j: 0ms;
+}
+
+/* Everything that must simply BE, rather than arrive. */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) [data-reveal] { --front: 110%; }
+  :root:not([data-motion="full"]) .marquee__rail { animation: none; }
+  /* The screen is already open. It is a folding screen either way — it just
+     does not swing. */
+  :root:not([data-motion="full"]) .leaf { --lp: 1; }
+  /* The drip is drawn at its full height, statically. It is design, not
+     animation, and deleting it would quietly remove part of the mark. */
+  :root:not([data-motion="full"]) .hanko::before,
+  :root:not([data-motion="full"]) .leaf__seal::after { animation: none; height: 26px; }
+  :root:not([data-motion="full"]) .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
+}
+:root[data-motion="reduced"] [data-reveal] { --front: 110%; }
+:root[data-motion="reduced"] .marquee__rail { animation: none; }
+:root[data-motion="reduced"] .leaf { --lp: 1; }
+:root[data-motion="reduced"] .hanko::before,
+:root[data-motion="reduced"] .leaf__seal::after { animation: none; height: 26px; }
+:root[data-motion="reduced"] .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
+
+/* --- Contrast ------------------------------------------------------------ */
+@media (prefers-contrast: more) {
+  :root { --sumi-12: #16130F5C; --rule: 2px; }
+}

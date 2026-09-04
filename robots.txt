@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://alphaman-0.github.io/zenji_shop/sitemap.xml

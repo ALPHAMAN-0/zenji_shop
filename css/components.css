@@ -1,0 +1,321 @@
+/* ============================================================================
+   components.css · nav, marquee, card, swatch, hanko, dialogs, drawer.
+   ========================================================================= */
+
+/* --- Wordmark ------------------------------------------------------------- */
+.wordmark {
+  display: inline-flex; align-items: baseline; gap: 0.5rem;
+  font-family: var(--display);
+  font-size: var(--t-md);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.wordmark__kanji { font-family: var(--jp); font-size: 0.82em; color: var(--shu); }
+
+.nav__link {
+  position: relative;
+  font-family: var(--mono); font-size: var(--t-xs);
+  letter-spacing: var(--track-mono); text-transform: uppercase;
+  padding-block: 0.4rem;
+}
+/* The underline is a scaled pseudo-element, never an animated width. */
+.nav__link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--d-snap) var(--e-snap);
+}
+.nav__link:hover::after,
+.nav__link[aria-current="page"]::after { transform: scaleX(1); }
+
+.icon-btn {
+  position: relative;
+  display: grid; place-items: center;
+  width: 44px; height: 44px;         /* 44px target via box, never by scaling an icon */
+  border-radius: 2px;
+}
+.icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.icon-btn__count {
+  position: absolute; top: 5px; right: 4px;
+  min-width: 16px; height: 16px; padding-inline: 3px;
+  display: grid; place-items: center;
+  background: var(--shu); color: var(--washi);
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.04em;
+  border-radius: 8px;
+  transform: scale(0);
+  transition: transform var(--d-snap) var(--e-snap);
+}
+.icon-btn__count[data-n]:not([data-n="0"]) { transform: scale(1); }
+
+/* --- Marquee 濡れ ---------------------------------------------------------
+   A CSS steps() floor that JS then couples to scroll velocity. Six lines of
+   JS separate this from a stock CSS marquee. Fixed height so a missing rail
+   can never shift layout. */
+.marquee {
+  background: var(--taku); color: var(--taku-fg);
+  height: 44px; display: flex; align-items: center;
+  overflow: hidden; contain: content;
+  border-block: var(--rule) solid #DCD5C61F;
+}
+.marquee__rail {
+  display: flex; flex: none; gap: 0;
+  will-change: auto;
+  animation: rail 38s linear infinite;
+}
+.marquee__seg {
+  flex: none; display: flex; align-items: center; gap: 1.5rem;
+  padding-right: 1.5rem; white-space: nowrap;
+  font-family: var(--mono); font-size: var(--t-xs);
+  letter-spacing: var(--track-micro); text-transform: uppercase;
+}
+.marquee__dot { color: var(--shu); }
+.marquee:hover .marquee__rail,
+.marquee:focus-within .marquee__rail { animation-play-state: paused; }
+
+/* --- Product card 裏 -------------------------------------------------------
+   The turn is not a cross-fade. The back BLEEDS THROUGH the front, which
+   dissolves in speckled patches from the cursor's side, while the mount tone
+   interpolates so the photo edge never seams. */
+.card { position: relative; display: flex; flex-direction: column; contain: content; }
+
+.card__frame {
+  display: block;              /* <a> is inline; do not rely on .card's flex to blockify it */
+  position: relative;
+  aspect-ratio: 3 / 4;                 /* matches the quick-view panel exactly, so the
+                                          FLIP is a uniform scalar with no distortion */
+  overflow: hidden;
+  background: var(--plate);
+  transition: --plate var(--d-turn) var(--e-soak),
+              transform var(--d-turn) var(--e-brush);
+  transform: translate3d(0, 0, 0);
+}
+.card:hover .card__frame,
+.card:focus-within .card__frame { transform: translate3d(0, -6px, 0); }
+
+/* THE one box-shadow on the entire site. */
+.card__frame::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: 0 10px 26px -14px #16130F00;
+  transition: box-shadow var(--d-turn) var(--e-soak);
+}
+.card:hover .card__frame::after { box-shadow: 0 10px 26px -14px #16130F73; }
+
+.card__img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.card__img--back { z-index: 1; }
+/* The FRONT is the layer that bleeds AWAY, revealing the back beneath it. */
+/* The turn itself lives in motion.css, which must win the cascade.
+   It is gated on .js-ready AND [data-ready] so a card can never expose a bare
+   plate before its back image has decoded. */
+.card__img--front { z-index: 2; }
+
+.card__deckle {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  border: 10px solid var(--washi);
+  mix-blend-mode: normal;
+}
+
+/* Splatter — six flecks, transform-only, 40ms apart. Never radially
+   symmetric: each has an authored offset. */
+.splat { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.splat i {
+  position: absolute; top: 50%; left: 50%;
+  width: 6px; height: 6px; border-radius: 50% 40% 55% 45%;
+  background: var(--accent-splash, var(--shu));
+  transform: translate3d(0, 0, 0) scale(0);
+  transition: transform var(--d-cut) var(--e-flick);
+  transition-delay: calc(var(--n) * var(--s-splat));
+}
+.card:hover .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
+
+.card__meta { padding-top: 0.9rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.card__name {
+  font-family: var(--display); font-size: var(--t-md);
+  letter-spacing: var(--track-disp); text-transform: uppercase;
+}
+.card__kanji { font-family: var(--jp); color: var(--accent-ink, var(--sumi)); font-size: var(--t-sm); }
+.card__row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+
+.price { font-family: var(--mono); font-size: var(--t-sm); letter-spacing: 0.06em; }
+.price--was { position: relative; color: var(--sumi-wash); }
+/* The strike is a scaled pseudo-element, not a text-decoration, so it can
+   draw itself on reveal. */
+.price--was::after {
+  content: ""; position: absolute; left: -2px; right: -2px; top: 52%; height: 1.5px;
+  background: var(--alert);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--d-snap) var(--e-snap);
+}
+.card.is-in .price--was::after,
+.is-in .price--was::after { transform: scaleX(1); }
+
+.tag-sale {
+  font-family: var(--mono); font-size: var(--t-xs);
+  letter-spacing: var(--track-micro); text-transform: uppercase;
+  color: var(--alert-ink);
+  border: var(--rule) solid var(--alert);
+  padding: 0.1rem 0.4rem;
+}
+
+/* Colour is never the only signal: every swatch carries its name and a
+   hairline ring, because #1E3B2E and #5A5C42 are otherwise invisible. */
+.swatch {
+  display: inline-block; width: 14px; height: 14px; flex: none;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px #16130F40;
+}
+
+.quick {
+  font-family: var(--mono); font-size: var(--t-xs);
+  letter-spacing: var(--track-mono); text-transform: uppercase;
+  align-self: flex-start; margin-top: 0.2rem;
+  color: var(--sumi-wash);
+  transition: color var(--d-snap) var(--e-snap);
+}
+.card:hover .quick { color: var(--sumi); }
+
+/* --- Hanko 判 · every primary CTA is a seal, not a button ----------------- */
+.hanko {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+  min-height: 46px; padding: 0.85rem 1.6rem;
+  background: var(--shu); color: var(--washi);
+  font-family: var(--mono); font-size: var(--t-xs);
+  letter-spacing: var(--track-mono); text-transform: uppercase;
+  transform: translate3d(0, 0, 0);
+  transition: background-color var(--d-soak) var(--e-soak);
+}
+.hanko[data-wet] { background: var(--shu-wet); }
+/* The drip: accelerating, then simply stopping. Under reduced motion this is
+   drawn static at its full height — it is design, not animation. */
+.hanko::before {
+  content: ""; position: absolute; left: 14%; top: 100%;
+  width: 2px; height: 0;
+  background: var(--shu);
+}
+.hanko[data-drip]::before { animation: drip var(--d-drip) var(--e-drip) forwards; }
+.hanko--ghost {
+  background: none; color: currentColor;
+  box-shadow: inset 0 0 0 var(--rule) var(--sumi-12);
+}
+/* A disabled seal must not read as pressable. It stays a seal, just unlinked. */
+.hanko[disabled] {
+  background: none;
+  color: var(--sumi-wash);
+  box-shadow: inset 0 0 0 var(--rule) var(--sumi-12);
+  cursor: not-allowed;
+}
+.hanko[disabled]::before { display: none; }
+
+/* --- Dialogs -------------------------------------------------------------- */
+dialog { border: 0; padding: 0; background: none; max-width: none; max-height: none; }
+dialog::backdrop { background: #16130FA6; }
+.veil { position: fixed; inset: 0; background: var(--taku); }
+
+.qv {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  display: grid; place-items: center; padding: var(--gutter);
+  color: var(--taku-fg);
+}
+.qv__panel {
+  position: relative; z-index: 2;
+  display: grid; gap: clamp(1.25rem, 3vw, 3rem);
+  grid-template-columns: minmax(0, 1fr);
+  width: min(1100px, 100%); max-height: 100%;
+  overflow: auto; overscroll-behavior: contain;
+}
+@media (min-width: 820px) { .qv__panel { grid-template-columns: minmax(0, 3fr) minmax(0, 4fr); align-items: center; } }
+.qv__frame { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--plate); }
+.qv__frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.sizes { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.size {
+  min-width: 46px; min-height: 44px; padding: 0.5rem 0.7rem;
+  font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 0.1em;
+  box-shadow: inset 0 0 0 var(--rule) #DCD5C63D;
+  transition: transform var(--d-snap) var(--e-snap);
+}
+.size[aria-pressed="true"] { background: var(--taku-fg); color: var(--taku); }
+.size:hover { transform: translate3d(0, -2px, 0); }
+
+/* On the rubbing ground every paper-scoped value has to invert. --sumi-12 is
+   a near-black hairline and --sumi-wash a dark grey: both vanish against
+   --taku. They are legible in the grid and invisible here, which is exactly
+   the kind of thing that only shows up when you look at the real render. */
+.qv .hanko--ghost { box-shadow: inset 0 0 0 var(--rule) #DCD5C659; }
+.qv .price--was   { color: #DCD5C68F; }
+.qv .price--was::after { background: var(--accent-hot, var(--alert)); }
+.qv .micro, .qv .mono { color: #DCD5C6C7; }
+
+/* --- Drawer --------------------------------------------------------------- */
+.drawer {
+  position: fixed; inset: 0 0 0 auto;
+  width: min(430px, 100%); height: 100%;
+  background: var(--washi); color: var(--sumi);
+  display: flex; flex-direction: column;
+  transform: translate3d(100%, 0, 0);
+  transition: transform var(--d-turn) var(--e-brush);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+dialog[open] .drawer { transform: translate3d(0, 0, 0); }
+.drawer__head {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.1rem var(--gutter);
+  border-bottom: var(--rule) solid var(--sumi-12);
+}
+.drawer__tabs { display: flex; gap: 0.25rem; margin-right: auto; }
+.drawer__tab {
+  font-family: var(--mono); font-size: var(--t-xs);
+  letter-spacing: var(--track-mono); text-transform: uppercase;
+  padding: 0.55rem 0.7rem; min-height: 44px;
+  color: var(--sumi-wash);
+}
+.drawer__tab[aria-selected="true"] { color: var(--sumi); box-shadow: inset 0 -2px 0 var(--shu); }
+.drawer__body { flex: 1; overflow: auto; overscroll-behavior: contain; padding: var(--gutter); }
+.drawer__foot { border-top: var(--rule) solid var(--sumi-12); padding: var(--gutter); }
+
+.line { display: flex; gap: 0.9rem; padding-block: 0.9rem; border-bottom: var(--rule) solid var(--sumi-12); }
+.line__thumb { width: 62px; aspect-ratio: 3 / 4; flex: none; object-fit: cover; background: var(--plate); }
+.line__mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.qty { display: flex; align-items: center; gap: 0.1rem; }
+.qty button { width: 32px; height: 32px; display: grid; place-items: center; box-shadow: inset 0 0 0 var(--rule) var(--sumi-12); }
+.qty output { min-width: 30px; text-align: center; font-family: var(--mono); font-size: var(--t-sm); }
+
+.empty { display: grid; gap: 0.7rem; place-items: start; padding-block: 2.5rem; }
+
+/* --- Motion toggle --------------------------------------------------------
+   Layers OVER the OS setting in both directions. --d-ui survives reduced
+   mode so the switch still reads as a switch being thrown. */
+.switch { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; }
+.switch__track {
+  width: 38px; height: 20px; flex: none;
+  box-shadow: inset 0 0 0 var(--rule) currentColor;
+  position: relative;
+}
+.switch__thumb {
+  position: absolute; top: 3px; left: 3px; width: 14px; height: 14px;
+  background: currentColor;
+  transition: transform var(--d-ui) var(--e-snap);
+}
+.switch[aria-pressed="true"] .switch__thumb { transform: translate3d(18px, 0, 0); }
+
+/* --- SFX katakana · the snap register ------------------------------------- */
+.sfx {
+  font-family: var(--jp-gothic); font-size: var(--t-lg);
+  color: var(--accent-ink, var(--sumi));
+  writing-mode: vertical-rl;
+  pointer-events: none; user-select: none;
+}
+
+/* --- shūchūsen · fires exactly twice on the whole site -------------------- */
+.shuchusen {
+  position: fixed; inset: 0; z-index: 150; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg at 50% 50%,
+    var(--shu) 0deg 0.7deg, transparent 0.7deg 3.4deg);
+  mask-image: radial-gradient(circle at 50% 50%, transparent 24%, #000 62%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 24%, #000 62%);
+  animation: shuchusen var(--d-cut) var(--e-exit) forwards;
+}

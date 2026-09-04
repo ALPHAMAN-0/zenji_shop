@@ -1,0 +1,97 @@
+/* ============================================================================
+   layout.css · container, grid, section rhythm, nav/footer shell.
+   ========================================================================= */
+
+/* Nav is fixed FROM THE START with a matching spacer — never sticky-after-
+   scroll, which is a guaranteed CLS source. */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 90;
+  height: var(--header-h);
+  background: var(--washi);
+  border-bottom: var(--rule) solid var(--sumi-12);
+  padding-top: env(safe-area-inset-top);
+}
+.nav-spacer { height: var(--header-h); }
+
+/* When the flood has swallowed the page, the nav inverts to the rubbing. */
+.nav[data-ground="taku"] {
+  background: var(--taku);
+  color: var(--taku-fg);
+  border-bottom-color: #DCD5C61F;
+}
+
+.nav__in {
+  height: var(--header-h);
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+.nav__links { display: flex; gap: clamp(1rem, 2.2vw, 2rem); margin-left: auto; }
+.nav__tools { display: flex; align-items: center; gap: 0.35rem; }
+
+@media (max-width: 860px) {
+  .nav__links { display: none; }
+}
+
+/* --- Section rhythm ------------------------------------------------------- */
+.section { padding-block: clamp(4.5rem, 3rem + 7vw, 10rem); }
+.section--tight { padding-block: clamp(3rem, 2rem + 4vw, 6rem); }
+.section--taku { background: var(--taku); color: var(--taku-fg); }
+
+.section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(2rem, 1.2rem + 3vw, 4rem);
+  padding-bottom: 1.1rem;
+  border-bottom: var(--rule) solid var(--sumi-12);
+}
+.section--taku .section__head { border-bottom-color: #DCD5C61F; }
+
+/* --- Product grid ---------------------------------------------------------
+   12 tiles is deliberate: it is exactly one full cycle of the 12-value
+   stagger jitter list, so the pattern lands and never visibly repeats. */
+.grid {
+  display: grid;
+  gap: clamp(1rem, 0.5rem + 2vw, 2.25rem) clamp(0.75rem, 0.4rem + 1.4vw, 1.5rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 640px)  { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1080px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1500px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+/* --- Footer --------------------------------------------------------------- */
+.footer {
+  position: relative;
+  background: var(--taku);
+  color: var(--taku-fg);
+  padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) 0;
+  overflow: hidden;
+}
+.footer__cols {
+  display: grid;
+  gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 780px) { .footer__cols { grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr)); } }
+
+.footer__bar {
+  margin-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+  border-top: var(--rule) solid #DCD5C61F;
+  padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 1rem 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- Scrollers ------------------------------------------------------------ */
+[data-scroller] { overscroll-behavior: contain; }
