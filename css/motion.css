@@ -140,12 +140,6 @@
    activation fires the same pointerdown-bound press().
    ========================================================================= */
 
-/* The marquee floor. steps() so the rail never sub-pixel-shimmers at rest. */
-@keyframes rail {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-50%, 0, 0); }
-}
-
   62%  { transform: scale(0.97) rotate(1.5deg); }
   100% { transform: scale(1) rotate(0); }
 }
@@ -213,7 +207,6 @@
 /* Everything that must simply BE, rather than arrive. */
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-motion="full"]) [data-reveal] { --front: 110%; }
-  :root:not([data-motion="full"]) .marquee__rail { animation: none; }
   /* The screen is already open. It is a folding screen either way — it just
      does not swing. */
   :root:not([data-motion="full"]) .leaf { --lp: 1; }
@@ -224,7 +217,6 @@
   :root:not([data-motion="full"]) .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
 }
 :root[data-motion="reduced"] [data-reveal] { --front: 110%; }
-:root[data-motion="reduced"] .marquee__rail { animation: none; }
 :root[data-motion="reduced"] .leaf { --lp: 1; }
 :root[data-motion="reduced"] .hanko::before,
 :root[data-motion="reduced"] .leaf__seal::after { animation: none; height: 26px; }

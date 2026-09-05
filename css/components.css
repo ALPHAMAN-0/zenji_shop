@@ -1,5 +1,5 @@
 /* ============================================================================
-   components.css · nav, marquee, card, swatch, hanko, dialogs, drawer.
+   components.css · nav, card, swatch, hanko, dialogs, drawer.
    ========================================================================= */
 
 /* --- Wordmark ------------------------------------------------------------- */
@@ -69,35 +69,10 @@
    Why it is necessary: #BC0100 measures 2.96:1 on --ground-inv, below even
    the 3:1 non-text floor, so the brand accent is simply not usable on the
    dark bands at its paper value. */
-.marquee, .look, .footer, .section--inv, .qv, .drawer__foot--inv {
+.look, .footer, .section--inv, .qv, .drawer__foot--inv {
   --brand: var(--brand-inv);
   --brand-fg: var(--ink);
 }
-
-/* --- Marquee 濡れ ---------------------------------------------------------
-   A CSS steps() floor that JS then couples to scroll velocity. Six lines of
-   JS separate this from a stock CSS marquee. Fixed height so a missing rail
-   can never shift layout. */
-.marquee {
-  background: var(--ground-inv); color: var(--ink-inv);
-  height: 44px; display: flex; align-items: center;
-  overflow: hidden; contain: content;
-  border-block: var(--rule) solid var(--rule-inv);
-}
-.marquee__rail {
-  display: flex; flex: none; gap: 0;
-  will-change: auto;
-  animation: rail var(--d-rail) linear infinite;
-}
-.marquee__seg {
-  flex: none; display: flex; align-items: center; gap: 1.5rem;
-  padding-right: 1.5rem; white-space: nowrap;
-  font-family: var(--mono); font-size: var(--t-xs);
-  letter-spacing: var(--track-micro); text-transform: uppercase;
-}
-.marquee__dot { color: var(--brand); }
-.marquee:hover .marquee__rail,
-.marquee:focus-within .marquee__rail { animation-play-state: paused; }
 
 /* --- Product card 裏 -------------------------------------------------------
    The turn is not a cross-fade. The back BLEEDS THROUGH the front, which

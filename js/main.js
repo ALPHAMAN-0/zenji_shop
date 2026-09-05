@@ -8,7 +8,6 @@ import * as Nav from './core/nav.js';
 import * as MotionToggle from './components/motion-toggle.js';
 import * as Hanko from './components/hanko.js';
 import * as Card from './components/card.js';
-import * as Marquee from './components/marquee.js';
 import * as QuickView from './components/quickview.js';
 import * as Drawer from './components/drawer.js';
 import * as Filter from './components/filter.js';
@@ -64,7 +63,6 @@ function boot() {
   run('filter', Filter.init);
 
   /* Then motion. */
-  run('marquee', Marquee.init);
   run('hero', Hero.init);
   run('flood', Flood.init);
   run('lookbook', Lookbook.init);
