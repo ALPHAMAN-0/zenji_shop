@@ -1,13 +1,14 @@
-- Run locally: `python3 -m http.server 8000`
-- Pre-push gate: `bash tools/check-paths.sh`
-- Regenerate product markup: TODO: verify exact command (tools/gen-markup.mjs)
-- Sync page shell: TODO: verify exact command (tools/sync-shell.mjs)
-- No test suite or linter config in this repo (tree -L 3)
-- Always relative paths, no leading `/` — breaks GitHub Pages project-page routing (README.md)
-- 404.html is the one file that must use absolute `/zenji_shop/` paths (README.md)
-- Never interpolate `${slug}-N.webp` — product image filenames are hand-authored (js/data/products.js)
-- Only css/tokens.css may hold a time/duration literal (tools/check-paths.sh)
-- One requestAnimationFrame loop only, in js/core/raf.js — never add a second (README.md)
-- Reduced motion swaps token values, never `*{animation:none}` (README.md, css/motion.css)
-- Read first: README.md, js/main.js, js/data/products.js
-- Architecture: see ARCHITECTURE.md — read before structural changes
+---
+tags: [claude, zenji_shop]
+---
+
+## Rules
+- No manifest (package.json, etc.) exists at repo root — no build/test/lint commands to report.
+- No source code exists yet — repo currently only contains `README.md`, `.gitignore`, and `image/` assets.
+
+## Files worth reading first
+1. `README.md` — states project intent: "ZENJI streetwear website | Next.js & React with Tailwind CSS"
+2. `image/` — existing asset naming convention (`Title-Case-With-Hyphens-N.webp`) to follow if adding imagery
+3. `.gitignore` — check before adding new files/directories
+
+Architecture: see ARCHITECTURE.md — read before structural changes
