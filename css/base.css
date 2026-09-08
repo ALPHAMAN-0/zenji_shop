@@ -204,6 +204,54 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
   letter-spacing: var(--track-head);
 }
 
+/* 版ずれ HANZURE — the misregister, off the hero and onto every head ---------
+   The hero has printed as two impressions since the beginning: a vermillion
+   plate a few pixels out of true, the black plate over it, and the vermillion
+   pulling into register one --d-flick behind its own word so the colour fringe
+   closes late. It fired on exactly three words, on one page, and every other
+   heading on the site printed in one flat colour.
+
+   It costs one pseudo-element, composites on `translate` with zero repaint,
+   needs no JavaScript, no new duration token and no new easing — so there was
+   never a reason it stopped at the hero. The --reg-x/--reg-y offsets stay
+   hand-authored per heading and deliberately do not form a pattern: a press
+   that is out of true is out of true DIFFERENTLY on every impression, and a
+   generated offset is the one thing that would make this read as an effect.
+
+   `content: attr(data-w) / ""` is the alt-text form, the same one .eyebrow
+   uses below. Without the `/ ""` a screen reader reads every heading twice.
+   A heading with no data-w generates an empty box and prints in one colour,
+   which is how a heading opts out.
+
+   isolation, NOT a positioned ancestor. z-index -1 has to resolve against the
+   heading's OWN stacking context or the plate drops behind the section
+   background — and .section--tint has one, so on the Origin band the vermillion
+   would have vanished entirely while working perfectly on the white bands. */
+.page-title, .section__title { position: relative; isolation: isolate; }
+.page-title::before, .section__title::before {
+  content: attr(data-w) / "";
+  position: absolute; inset: 0;
+  z-index: -1;
+  color: var(--brand);
+  translate: var(--reg-x, 0) var(--reg-y, 0);
+  transition: translate var(--d-turn) var(--e-snap);
+  transition-delay: calc(var(--i) * var(--s) + var(--j) + var(--d-flick));
+}
+/* Either the heading carries the reveal itself, or the .section__head around
+   it does — the head is the cheaper target, because one [data-reveal] there
+   lands the ruled line and the register pull together and costs the reveal
+   queue one slot per section instead of two. */
+.page-title.is-in::before,
+.section__title.is-in::before,
+.section__head.is-in .page-title::before,
+.section__head.is-in .section__title::before { translate: 0 0; }
+/* With JS blocked the .no-js law reveals the heading but .is-in never lands,
+   so the plate would sit permanently out of register on every head on the
+   site. Three hero words can carry a stuck misregister as a print artefact;
+   twenty headings read as a rendering bug. */
+.no-js .page-title::before,
+.no-js .section__title::before { translate: 0 0; }
+
 /* --- The terminal label voice ---------------------------------------------
    `// SECTION_LABEL`. The marks are drawn by CSS with an empty alt string, so
    a screen reader announces the label and not "slash slash". Where the

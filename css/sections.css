@@ -231,7 +231,25 @@
   display: grid; gap: clamp(1.5rem, 4vw, 4rem);
   grid-template-columns: minmax(0, 1fr);
 }
-@media (min-width: 900px) { .manifesto__grid { grid-template-columns: 0.8fr 1.2fr; } }
+/* 960, the tablet -> small-laptop rung. 900 is not on the ladder in tokens.css
+   and never was; between 900 and 959 the two-column spread ran inside a
+   container that is still being laid out as a tablet everywhere else. */
+@media (min-width: 960px) {
+  .manifesto__grid { grid-template-columns: 0.8fr 1.2fr; }
+  /* The fold seam, borrowed exactly from .leaf::after — same gradient, same
+     hairline, same job. The byobu folds four leaves in the band directly
+     above this one; the manifesto is a spread across the same screen, so it
+     is creased the same way rather than butted together with air. */
+  .manifesto__grid > :first-child { position: relative; }
+  .manifesto__grid > :first-child::after {
+    content: ""; position: absolute; top: 0; bottom: 0;
+    right: calc(clamp(1.5rem, 4vw, 4rem) / -2); width: 1px;
+    /* transparent at the ends, not a named ground: .manifesto__grid is used
+       on story.html too, where the band is white paper and not the warm tint,
+       and a seam that fades out to #FFF0EE on #FFFFFF has visible pink ends. */
+    background: linear-gradient(transparent, var(--ink-a15), transparent);
+  }
+}
 
 /* --- Flood 墨流し ----------------------------------------------------------
    Black ink floods up with a torn, speckled front. The headline sitting on
@@ -280,7 +298,7 @@
    with every section boundary invisible. The panels stay dark, so the imagery
    still carries the weight; only the band around them flips. */
 .look--paper { background: var(--ground); color: var(--ink); }
-.look--paper .section__head { border-bottom-color: var(--rule-c); }
+.look--paper .section__head::after { background: var(--rule-c); }
 .look__panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
 .look__panel { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: #171717; }
 .look__panel img {
@@ -299,7 +317,13 @@
   width: 100%; pointer-events: none; opacity: 0.5;
 }
 .footer__mark {
-  width: 74px; height: 74px;
+  /* display, because `width` and `height` do nothing to an inline box. The
+     span was inline, both were silently dropped, the mark rendered at 0x0 and
+     was invisible on every page — and its empty line box still pushed the
+     column's first line 17px below its four siblings. That offset is the
+     misalignment you could see; the missing logo is why it was there. */
+  display: block;
+  width: 74px; aspect-ratio: 1;
   background: var(--ink-inv);
   -webkit-mask-image: url(../image/wm_logo.webp);
   mask-image: url(../image/wm_logo.webp);

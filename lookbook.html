@@ -66,10 +66,11 @@
 <main id="main">
 
   <section class="section section--tight wrap" aria-labelledby="lbHead">
-    <div class="section__head">
+    <div class="section__head" data-reveal>
       <div>
-        <p class="micro">// LOOKBOOK_001</p>
-        <h1 class="page-title" id="lbHead">In the Field</h1>
+        <p class="eyebrow">LOOKBOOK_001</p>
+        <h1 class="page-title" id="lbHead"
+            data-w="In the Field" style="--reg-x:-6px;--reg-y:4px">In the Field</h1>
       </div>
       <a class="mono" href="collection.html">[ Shop_The_Drop → ]</a>
     </div>
@@ -121,42 +122,86 @@
 <!--#SHELL:FOOTER-->
 <footer class="footer">
   <canvas class="footer__canvas" id="inkBasin" aria-hidden="true"></canvas>
-  <div class="wrap" style="position:relative;z-index:2">
-    <div class="footer__cols">
-      <div>
+  <div class="wrap footer__in">
+    <!-- The brand cell carries NO .micro heading, and that is the whole reason
+         the five cells line up. It used to open with "Follow the Lore" set in
+         the same 11px tracked label voice as Drops / Explore / Community /
+         Contact — so the eye read five column headings on one row, and the
+         first one sat 17px low because the empty inline .footer__mark above it
+         still generated a line box. The mark now draws (it is a block, so its
+         74px finally applies) and the label voice appears exactly four times,
+         where there are exactly four link columns.
+
+         The social links are gone from here too: they were listed twice in the
+         same footer, once here and again under "Community". That column keeps
+         them and takes the better name. -->
+    <div class="footer__cols" data-stagger>
+      <div class="footer__brand bleed bleed--diag" data-reveal>
         <span class="footer__mark" aria-hidden="true"></span>
-        <p class="micro" style="margin-top:1.1rem">Follow the Lore</p>
-        <div class="card__row" style="margin-top:.6rem">
-          <a class="mono" href="https://www.tiktok.com/" rel="noopener noreferrer nofollow" target="_blank">TikTok</a>
-          <a class="mono" href="https://www.instagram.com/" rel="noopener noreferrer nofollow" target="_blank">Instagram</a>
-          <a class="mono" href="https://www.facebook.com/" rel="noopener noreferrer nofollow" target="_blank">Facebook</a>
-        </div>
+        <p class="footer__creed">Nothing fades.<br><span>Everything bleeds.</span></p>
       </div>
-      <nav aria-label="Drops"><p class="micro">Drops</p>
-        <ul class="footer__list"><li><a class="mono" href="./">Home</a></li>
-        <li><a class="mono" href="collection.html#drop">Drop</a></li>
-        <li><a class="mono" href="collection.html">Collection</a></li></ul></nav>
-      <nav aria-label="Explore"><p class="micro">Explore</p>
-        <ul class="footer__list"><li><a class="mono" href="lookbook.html">Lookbook</a></li>
-        <li><a class="mono" href="story.html">Our Story</a></li>
-        <li><a class="mono" href="collection.html">Collection</a></li></ul></nav>
-      <nav aria-label="Community"><p class="micro">Community</p>
-        <ul class="footer__list"><li><a class="mono" href="https://www.tiktok.com/" rel="noopener noreferrer nofollow" target="_blank">TikTok</a></li>
-        <li><a class="mono" href="https://www.instagram.com/" rel="noopener noreferrer nofollow" target="_blank">Instagram</a></li>
-        <li><a class="mono" href="https://www.facebook.com/" rel="noopener noreferrer nofollow" target="_blank">Facebook</a></li></ul></nav>
-      <nav aria-label="Contact"><p class="micro">Contact</p>
-        <ul class="footer__list"><li><a class="mono" href="story.html#faq">FAQ</a></li>
-        <li><a class="mono" href="story.html#returns">Return Policy</a></li>
-        <li><a class="mono" href="story.html#privacy">Privacy Policy</a></li>
-        <li><a class="mono" href="story.html#terms">Terms</a></li>
-        <li><a class="mono" href="story.html#contact">Contact Us</a></li></ul></nav>
+
+      <nav class="footer__col bleed bleed--up" data-reveal aria-label="Drops">
+        <p class="micro footer__head">Drops</p>
+        <ul class="footer__list">
+          <li><a class="mono" href="./">Home</a></li>
+          <li><a class="mono" href="collection.html#drop">Drop</a></li>
+          <li><a class="mono" href="collection.html">Collection</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__col bleed bleed--up" data-reveal aria-label="Explore">
+        <p class="micro footer__head">Explore</p>
+        <ul class="footer__list">
+          <li><a class="mono" href="lookbook.html">Lookbook</a></li>
+          <li><a class="mono" href="story.html">Our Story</a></li>
+          <li><a class="mono" href="collection.html">Collection</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__col bleed bleed--up" data-reveal aria-label="Follow the Lore">
+        <p class="micro footer__head">Follow the Lore</p>
+        <ul class="footer__list">
+          <li><a class="mono" href="https://www.tiktok.com/" rel="noopener noreferrer nofollow" target="_blank">TikTok</a></li>
+          <li><a class="mono" href="https://www.instagram.com/" rel="noopener noreferrer nofollow" target="_blank">Instagram</a></li>
+          <li><a class="mono" href="https://www.facebook.com/" rel="noopener noreferrer nofollow" target="_blank">Facebook</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__col bleed bleed--up" data-reveal aria-label="Contact">
+        <p class="micro footer__head">Contact</p>
+        <ul class="footer__list">
+          <li><a class="mono" href="story.html#faq">FAQ</a></li>
+          <li><a class="mono" href="story.html#returns">Return Policy</a></li>
+          <li><a class="mono" href="story.html#privacy">Privacy Policy</a></li>
+          <li><a class="mono" href="story.html#terms">Terms</a></li>
+          <li><a class="mono" href="story.html#contact">Contact Us</a></li>
+        </ul>
+      </nav>
     </div>
+
+    <!-- Three flex children under space-between could not fit one 1358px row,
+         so the toggle — the only CONTROL in a row of two copy lines — wrapped
+         to the far left under the copyright and overlapped it. It is a grid
+         now: copy stacks in column 1, the control sits in its own column and
+         spans both rows. Nothing wraps, and the control is never mistaken for
+         a third line of legal text. -->
     <div class="footer__bar">
-      <p class="micro">© 2026 ZENJI. All drops are final. No restocks. Ever.</p>
-      <p class="micro">● Anime-inspired. Gamer-built. Community-owned.</p>
+      <p class="micro footer__legal">&copy; 2026 ZENJI. All drops are final. No restocks. Ever.</p>
+      <p class="micro footer__note">&#9679; Anime-inspired. Gamer-built. Community-owned.</p>
+      <!-- .switch__label, and not `span:last-child`. That selector matched
+           .switch__thumb — the 14x14px absolutely-positioned dot is the last
+           child of .switch__track and comes FIRST in document order, so
+           querySelector returned it — and motion-toggle.js wrote the state
+           string into it on every paint. "Motion: System" spilled out of a
+           14px box across the copyright line on all four pages.
+
+           The static text is the state, not the action, because it is what JS
+           writes one frame later. It said "Reduce Motion" before, which with
+           JS blocked is a promise an inert button cannot keep. -->
       <button class="switch mono" type="button" id="motionToggle" aria-pressed="false">
         <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
-        <span>Reduce Motion</span>
+        <span class="switch__label">Motion: System</span>
       </button>
     </div>
   </div>

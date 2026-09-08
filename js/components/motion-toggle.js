@@ -11,7 +11,15 @@ export function init() {
   const btn = $('#motionToggle');
   apply();
   if (!btn) return;
-  const label = btn.querySelector('span:last-child');
+  /* .switch__label, NOT 'span:last-child'. That selector is not scoped to the
+     button's own children: .switch__thumb is the last child of .switch__track
+     and comes FIRST in document order, so querySelector returned the 14x14px
+     absolutely-positioned dot. Every paint() wrote "Motion: System" into it,
+     the string spilled out of a 14px box across the "Reduce Motion" label and
+     the copyright line, and the real label never changed at all — so the
+     control reported its state twice, in the wrong place, in both cases
+     wrongly. On all four pages, from first paint. */
+  const label = btn.querySelector('.switch__label');
 
   const paint = () => {
     const c = getChoice();

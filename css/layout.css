@@ -116,9 +116,28 @@
   flex-wrap: wrap;
   margin-bottom: clamp(2rem, 1.2rem + 3vw, 4rem);
   padding-bottom: 1.1rem;
-  border-bottom: var(--rule) solid var(--rule-c);
+  position: relative;
 }
-.section--inv .section__head { border-bottom-color: var(--rule-inv); }
+/* 罫 THE RULE, DRAWN ------------------------------------------------------
+   It was a static border-bottom: the one horizontal line under every section
+   title on the site, already there before the title it belongs to had arrived.
+   It is ruled now, left to right, on the same scaleX(0) -> scaleX(1) pseudo
+   the nav underline and the struck price already use — so the head assembles
+   in the order a page is actually laid out: eyebrow, title, then the rule
+   under them. --d-stroke is the load stroke's own duration; this is the widest
+   single gesture on the page and it is paced like one.
+
+   height and colour still come from the tokens, so `prefers-contrast: more`
+   (which lifts --rule to 2px and --rule-c to 36% alpha) reaches it unchanged. */
+.section__head::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: var(--rule); background: var(--rule-c);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--d-stroke) var(--e-brush);
+}
+.section__head.is-in::after { transform: scaleX(1); }
+.no-js .section__head::after { transform: scaleX(1); }
+.section--inv .section__head::after { background: var(--rule-inv); }
 
 /* --- Product grid ---------------------------------------------------------
    12 tiles is deliberate: it is exactly one full cycle of the 12-value
@@ -135,34 +154,114 @@
 @media (min-width: 720px)  { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 1500px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 
-/* --- Footer --------------------------------------------------------------- */
+/* --- Footer ---------------------------------------------------------------
+   The last band on every page, and until now the only one with no arrival at
+   all: every other section on this site bleeds in and the footer simply was
+   there. It bleeds UP, from the basin, because that is where its ink is. */
 .footer {
   position: relative;
-  background: var(--ground-inv);
   color: var(--ink-inv);
   padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) 0;
   overflow: hidden;
+  /* The ground starts 25px down, because the top 26px belong to the tear. */
+  background: linear-gradient(var(--ground-inv), var(--ground-inv))
+              no-repeat 0 25px / 100% calc(100% - 25px);
 }
+/* 千切り THE TORN EDGE ------------------------------------------------------
+   Ink does not stop on a ruled line. The seam where the page ground met the
+   footer's was the last hard horizontal rule on a site whose whole grammar is
+   soaked edges — so the ink is torn off instead, and the paper shows through
+   the bites.
+
+   The tile is 220px, the fibre tile's width, so the tear and the speckle share
+   a period. It is 26px of a 220px tile rather than a stretched one-off, which
+   is why the bites vary in width and depth instead of reading as a sawtooth.
+
+   ONLY the strip is masked. Masking .footer itself worked and was wrong: it
+   pushed the entire band — 1400x518 including the ink basin canvas, which
+   repaints every frame — through one masked layer, and every canvas frame then
+   had to recomposite the whole footer through it. Measured: the renderer
+   stopped responding. Animating a mask is a repaint; so is painting anything
+   underneath one. 1400x26 static pixels cost nothing. */
+.footer::before {
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 26px;
+  background: var(--ground-inv);
+  --tear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='26'%3E%3Cpath fill='%23000' d='M0 26V15l6-3 7 4 6-6 9 4 6-5 9 4 5-6 9 5 6 5 8-6 9 4 6-7 9 5 6 5 8-6 7 4 8-7 9 5 6-4 8 6 8-5 7 4 8-8 8 6 7 4 8-6 7 4 8-3 6 5 6-2v11z'/%3E%3C/svg%3E");
+  -webkit-mask-image: var(--tear); mask-image: var(--tear);
+  -webkit-mask-size: 220px 26px; mask-size: 220px 26px;
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-position: top left; mask-position: top left;
+}
+/* Replaces `style="position:relative;z-index:2"` in the markup. --z-raise is
+   the token that has always described exactly this: lift the content off the
+   basin canvas painting behind it. */
+.footer__in { position: relative; z-index: var(--z-raise); }
+
 .footer__cols {
   display: grid;
   gap: clamp(2rem, 1rem + 3vw, 3.5rem);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-@media (min-width: 780px) { .footer__cols { grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr)); } }
+/* 960, the tablet -> small-laptop rung. The 780 that stood here is not on the
+   ladder in tokens.css at all, and five columns at 780px gave each link column
+   about 120px — narrower than "PRIVACY POLICY" set at 13px with 0.22em
+   tracking, so every long entry wrapped. */
+@media (min-width: 960px) {
+  .footer__cols { grid-template-columns: 1.35fr repeat(4, minmax(0, 1fr)); }
+}
+
+/* The brand cell is the only one without a label-voice heading, which is what
+   lets the four that have one align on a single row. */
+.footer__brand { display: grid; gap: var(--sp-5); justify-items: start; align-content: start; }
+/* The site's own law, set in the site's own display voice. Anton is a poster
+   face and this is the one line in the footer that is allowed to be a poster. */
+.footer__creed {
+  font-family: var(--display);
+  font-size: var(--t-lg);
+  line-height: var(--lh-head);
+  letter-spacing: var(--track-head);
+  text-transform: uppercase;
+}
+/* --brand, not --brand-inv: components.css rebinds the pair inside .footer, so
+   this reads the lifted #E04A2F automatically — 4.9:1 on the inverted ground,
+   where the paper value would have measured 2.96:1 and failed. */
+.footer__creed span { color: var(--brand); }
+
+/* A column heading is not the first link. .footer__list's 0.55rem gap ran
+   between the links, but nothing separated the heading from them, so the
+   heading closed up tighter against "Home" than "Home" sat to "Drop" and the
+   four headings read as list items. Half-dry ink pulls it further out of the
+   link register. */
+.footer__head { margin-bottom: var(--sp-4); color: var(--ink-inv-2); }
 
 /* Sixteen uses in the markup and no rule anywhere, so `ul[class]`'s reset
    left the footer link columns as a gapless unstyled stack. */
 .footer__list { display: grid; gap: 0.55rem; }
+/* Every other control on this site is built to a target floor and these were
+   bare 13px text on a 20px line — the smallest hit areas in the document, in
+   the band people reach for on a phone. The padding takes each row past the
+   24px WCAG 2.5.8 minimum without turning the footer into a ladder. */
+.footer__list a { display: inline-block; padding-block: 0.3rem; }
 
 .footer__bar {
   margin-top: clamp(2.5rem, 1.5rem + 4vw, 5rem);
   border-top: var(--rule) solid var(--rule-inv);
   padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
-  display: flex;
-  gap: 1rem 2rem;
-  flex-wrap: wrap;
+  display: grid;
+  gap: var(--sp-3) var(--sp-6);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
+}
+/* Copy stacks in column one; the control gets its own column and spans both
+   rows. Under flex + space-between the three children measured 1314px against
+   1358px of usable row, so the toggle wrapped to the far left and landed on
+   top of the copyright line. */
+@media (min-width: 960px) {
+  .footer__bar { grid-template-columns: minmax(0, 1fr) auto; }
+  .footer__legal { grid-area: 1 / 1; }
+  .footer__note  { grid-area: 2 / 1; }
+  .footer__bar .switch { grid-area: 1 / 2 / span 2 / auto; justify-self: end; }
 }
 
 /* --- Scrollers ------------------------------------------------------------ */

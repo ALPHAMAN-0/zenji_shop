@@ -247,12 +247,30 @@
   :root:not([data-motion="full"]) .hanko::before,
   :root:not([data-motion="full"]) .leaf__seal::after { animation: none; height: 26px; }
   :root:not([data-motion="full"]) .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
+  /* The rule under a section head is RULED, and every headline is IN REGISTER.
+     Both are states, not animations — the same call as the CTA drip above,
+     which is drawn at its full height rather than deleted.
+
+     Without these the ruled line is a scaleX(0) pseudo that only ever reaches
+     scaleX(1) through .is-in, so a head whose reveal never fired would show no
+     rule at all — precisely the failure `[data-reveal] { --front: 110% }`
+     exists to prevent for everything else — and the vermillion plate would sit
+     permanently a few pixels out of true on every heading on the site. A
+     misregister that never closes is not a print artefact, it is a bug. */
+  :root:not([data-motion="full"]) .section__head::after { transform: scaleX(1); }
+  :root:not([data-motion="full"]) .hero__word::before,
+  :root:not([data-motion="full"]) .page-title::before,
+  :root:not([data-motion="full"]) .section__title::before { translate: 0 0; }
 }
 :root[data-motion="reduced"] [data-reveal] { --front: 110%; }
 :root[data-motion="reduced"] .leaf { --lp: 1; }
 :root[data-motion="reduced"] .hanko::before,
 :root[data-motion="reduced"] .leaf__seal::after { animation: none; height: 26px; }
 :root[data-motion="reduced"] .splat i { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
+:root[data-motion="reduced"] .section__head::after { transform: scaleX(1); }
+:root[data-motion="reduced"] .hero__word::before,
+:root[data-motion="reduced"] .page-title::before,
+:root[data-motion="reduced"] .section__title::before { translate: 0 0; }
 
 /* --- Contrast ------------------------------------------------------------ */
 @media (prefers-contrast: more) {
