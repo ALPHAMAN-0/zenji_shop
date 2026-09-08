@@ -96,6 +96,19 @@
   transition-timing-function: cubic-bezier(.22, .61, .24, 1);
 }
 
+/* 効果音 — the SFX is struck DOWN the frame on the turn, one --d-flick behind
+   the photograph so it reads as a consequence of the turn rather than part of
+   it. Same gate as the turn itself (.js-ready + [data-ready]), so it can never
+   fire over a card whose back image has not decoded. It rests at --front: 0%,
+   which is .bleed's own initial value, so at rest there is no katakana on the
+   page at all — see the note in tools/gen-markup.mjs. */
+.js-ready .card[data-ready]:hover .sfx,
+.js-ready .card[data-ready]:focus-within .sfx,
+.js-ready .card.is-turned[data-ready] .sfx {
+  --front: 112%;
+  transition-delay: var(--d-flick);
+}
+
 /* Tier D is implicit: if @property is unsupported, --front never animates,
    .is-in still sets it, and the element simply appears. Never blank. */
 
@@ -128,21 +141,46 @@
               --tail  var(--d-bleed) var(--e-brush),
               clip-path var(--d-bleed) var(--e-brush),
               color   var(--d-set)   var(--e-soak);
+  /* ...and the delay has to be restated, because a `transition` SHORTHAND
+     resets transition-delay to 0s. `[data-reveal]` above is (0,1,0) and this
+     rule is (0,2,0) and later, so it won on both counts and silently threw the
+     stagger away. Measured on index.html:106-108 before this line existed:
+     Wear/Your/Story all computed transitionDelay: 0s, and all three
+     transitionstart events fired in the same millisecond.
+
+     `.bleed.dry` + a non-zero --i occurs in exactly ONE place on the site, and
+     it is the hero headline — so this cost the site's most prominent arrival
+     its 130ms word stagger and nothing else, which is precisely why it looked
+     like it worked: the cards and byobu leaves are `.bleed` WITHOUT `.dry`,
+     they never hit this rule, and they staggered correctly the whole time.
+
+     On a `.bleed.dry` with no [data-reveal], --i and --s are undefined, the
+     calc() is invalid at computed-value time, and transition-delay falls back
+     to its initial 0s — which is the right answer for an element with no
+     stagger group. */
+  transition-delay: calc(var(--i) * var(--s) + var(--j));
 }
 
 /* ============================================================================
    KEYFRAMES
    ----------------------------------------------------------------------------
-   Three of these used to be dead: `stamp` and `fleck` were reimplemented as
-   inline WAAPI keyframe arrays in hanko.js and never referenced from CSS, and
-   `impact` had no consumer anywhere at all. The stale comment on `stamp` even
-   claimed it was "the keyboard-activation path", which it was not — keyboard
-   activation fires the same pointerdown-bound press().
+   Two, and only two. `stamp` and `fleck` are inline WAAPI keyframe arrays in
+   hanko.js; `impact` had no consumer anywhere. All three were deleted — but
+   the deletion took only the `@keyframes <name> {` opener and left the BODIES
+   behind, which is how this file spent its life shipping three orphaned blocks
+   and a stray `}` at top level.
+
+   That is not a cosmetic error. Per CSS Syntax L3, a stray `}` at the top
+   level is consumed as the start of a qualified rule whose prelude runs to the
+   next `{` — so each orphan SWALLOWED the rule that followed it. `drip` and
+   `shuchusen` both parsed to nothing, and `document.styleSheets` reported
+   ZERO keyframes on the entire site: the hanko drip, the byobu seal drip and
+   the 集中線 flash were all silently dead, and the flash — with no keyframes to
+   scale and clear it — sat on screen at full strength for 900ms instead of
+   260. tools/check-paths.sh gate 11 now fails the build on an orphaned
+   keyframe body, because nothing else catches CSS that merely parses wrong.
    ========================================================================= */
 
-  62%  { transform: scale(0.97) rotate(1.5deg); }
-  100% { transform: scale(1) rotate(0); }
-}
 
 /* The drip. ease-IN only — it accelerates, then simply stops.
    That is what gravity does, and it is the detail people notice
@@ -152,12 +190,6 @@
   to   { height: 26px; }
 }
 
-  to   { transform: translate3d(var(--dx), var(--dy), 0) scale(1); }
-}
-
-  62%, 74% { transform: translate3d(0, -3px, 0) scale(1.04); }
-  100%     { transform: translate3d(0, 0, 0); }
-}
 
 /* shūchūsen — concentrated lines. Fires exactly twice on the whole site,
    node removed on finish. The one conic gradient, alive for 260ms. */

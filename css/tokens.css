@@ -104,6 +104,22 @@
      foreground are one decision, so they are one pair of tokens. */
   --brand-fg:   #FFFFFF;
 
+  /* The ghost seal's HOVER inversion, as a pair, for the same reason --brand
+     and --brand-fg are a pair. It was written `background: currentColor;
+     color: var(--ground)` in one rule — and `currentColor` inside `background`
+     resolves to the COMPUTED COLOR OF THE SAME ELEMENT, which that rule was
+     simultaneously setting to --ground. Both sides landed on #FFFFFF: measured
+     1.00:1, WHITE ON WHITE. The hero's "Our Story" CTA vanished under the
+     cursor, and so did the quick view's "Close" — the invisible one being the
+     control a trapped keyboard user needs most.
+
+     currentColor cannot express "invert against my own ground": by the time it
+     is read, the ground has already been overwritten. Only a pair can.
+     On paper: ink fill, paper text — 19.8:1.
+     Rebound on the inverted grounds in components.css — 15.9:1 there. */
+  --ghost-fill: var(--ink);
+  --ghost-fg:   var(--ground);
+
   --alert:       #BC0100;   /* SALE strike + tag FILL. graphic only         */
   --alert-ink:   #8F0100;   /* SALE tag TEXT. 9.7:1 on ground               */
 

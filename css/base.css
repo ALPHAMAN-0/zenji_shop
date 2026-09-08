@@ -41,6 +41,32 @@ strong, b { font-weight: var(--w-label); }
 img, video, svg { display: block; max-width: 100%; }
 img { height: auto; background-color: var(--plate); }
 
+/* The `hidden` attribute is a PROMISE, and this is the only line that keeps it.
+   The UA sheet's `[hidden] { display: none }` is a single-attribute selector
+   with no weight to spare, so ANY author rule that sets `display` on the same
+   element beats it. Two components relied on the attribute and both silently
+   lost:
+
+     .plate       display: grid   (css/sections.css)   -> index.html:55's
+       `<div class="plate" id="plate" hidden>` was inert. With js/main.js
+       blocked, the plate paints an OPAQUE FULL-VIEWPORT WHITE PANEL over the
+       whole document and never removes itself — the exact "catastrophic AND
+       invisible failure mode" the .js-ready law below exists to prevent, and
+       the law could not help because the inline head script had already
+       written .js-ready before main.js failed.
+
+     .card        display: flex   (css/components.css) -> js/components/filter.js
+       sets `card.hidden = !keep` and its header comment says it uses the
+       attribute "so the accessibility tree and the layout agree". They did not
+       agree: on collection.html the Origin Drop / Full Price filters changed
+       the count to "5 / 10" and announced "5 of 10 products shown" while all
+       ten cards stayed on screen. The announcement was the only thing that
+       ever changed, and it was false.
+
+   !important because the whole point is that nothing may outrank it — and
+   because both authors were right to trust the attribute. */
+[hidden] { display: none !important; }
+
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { background: none; border: 0; padding: 0; cursor: pointer; }
@@ -200,7 +226,11 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
   /* .card__deckle, not .deckle — and there is no .fiber class, only the
      --fiber variable. Both were typos, so High Contrast kept the 10px deckle
      borders this rule exists to suppress. */
-  .splat, canvas, .card__deckle { display: none !important; }
+  /* .sfx joins these: it is decorative, aria-hidden, and drawn as a paper
+     fill with an ink -webkit-text-stroke. Forced colors overrides `color` but
+     NOT the text stroke, so the katakana would come back as system-coloured
+     glyphs inside a stroke that no longer matches anything. */
+  .splat, canvas, .card__deckle, .sfx { display: none !important; }
   :focus-visible { outline: 3px solid Highlight; }
   .swatch { forced-color-adjust: none; }
 }

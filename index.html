@@ -80,7 +80,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l1 13H5zM9 7a3 3 0 0 1 6 0"/></svg>
         <span class="icon-btn__count" data-count="bag" data-n="0" aria-hidden="true">0</span>
       </button>
-      <button class="icon-btn" type="button" id="navToggle" aria-label="Menu" aria-expanded="false">
+      <button class="icon-btn nav__burger" type="button" id="navToggle" aria-label="Menu" aria-expanded="false">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
       </button>
     </div>
@@ -102,10 +102,25 @@
     <div class="hero__scrim" aria-hidden="true"></div>
     <div class="wrap hero__body">
       <p class="micro bleed bleed--diag" data-reveal style="--s:var(--s-line)">// THE_ORIGIN_DROP · 2026</p>
+      <!-- 版ずれ hanzure. data-w feeds the vermillion under-plate in
+           css/sections.css; --reg-x/--reg-y are its hand-authored offsets, and
+           they are deliberately not a pattern — a press that is out of true is
+           out of true differently on every impression.
+
+           The beat is 0 / 80 / 340ms: two quick hits, a gap, then the heavy
+           third. It used to be --i 0/1/2 against --s-word, which is 0/130/260 —
+           a metronome, and README.md lists evenly-spaced staggers among the
+           things this site deliberately does not do. (It never actually ran:
+           .bleed.dry's transition shorthand was resetting transition-delay to
+           0s, so all three words arrived on the same frame. See css/motion.css.)
+           Every value here is a token: --s-splat is 40ms, --d-cut is 260ms. -->
       <h1 class="hero__title" id="heroTitle">
-        <span class="hero__word bleed bleed--diag dry" data-reveal style="--i:0;--s:var(--s-word)">Wear</span>
-        <span class="hero__word bleed bleed--left dry" data-reveal style="--i:1;--s:var(--s-word)">Your</span>
-        <span class="hero__word bleed bleed--diag dry" data-reveal style="--i:2;--s:var(--s-word)">Story</span>
+        <span class="hero__word bleed bleed--diag dry" data-reveal data-w="Wear"
+              style="--i:0;--s:var(--s-splat);--j:0ms;--reg-x:7px;--reg-y:-5px">Wear</span>
+        <span class="hero__word bleed bleed--left dry" data-reveal data-w="Your"
+              style="--i:2;--s:var(--s-splat);--j:0ms;--reg-x:-4px;--reg-y:4px">Your</span>
+        <span class="hero__word bleed bleed--diag dry" data-reveal data-w="Story"
+              style="--i:2;--s:var(--s-splat);--j:var(--d-cut);--reg-x:6px;--reg-y:5px">Story</span>
       </h1>
       <div class="hero__cta">
         <a class="hanko" href="collection.html" data-hanko>Shop the Drop <span aria-hidden="true">→</span></a>
@@ -220,6 +235,7 @@
                  width="1023" height="1537" alt="Will of the Sun tee in marigold, front view"
                  loading="lazy" decoding="async"
                  style="object-position:50% 34%">
+            <span class="sfx bleed bleed--down" aria-hidden="true" lang="ja">ゴウ</span>
             <span class="splat" aria-hidden="true"><i style="--n:0;--dx:-46px;--dy:-34px"></i><i style="--n:1;--dx:38px;--dy:-52px"></i><i style="--n:2;--dx:58px;--dy:18px"></i><i style="--n:3;--dx:-30px;--dy:46px"></i><i style="--n:4;--dx:72px;--dy:-12px"></i><i style="--n:5;--dx:-64px;--dy:8px"></i></span>
             <span class="card__deckle" aria-hidden="true"></span>
           </a>
@@ -246,6 +262,7 @@
                  width="1024" height="1536" alt="Warrior Spirit tee in deep forest, front view"
                  loading="lazy" decoding="async"
                  style="object-position:50% 36%">
+            <span class="sfx bleed bleed--down" aria-hidden="true" lang="ja">ズシャ</span>
             <span class="splat" aria-hidden="true"><i style="--n:0;--dx:-46px;--dy:-34px"></i><i style="--n:1;--dx:38px;--dy:-52px"></i><i style="--n:2;--dx:58px;--dy:18px"></i><i style="--n:3;--dx:-30px;--dy:46px"></i><i style="--n:4;--dx:72px;--dy:-12px"></i><i style="--n:5;--dx:-64px;--dy:8px"></i></span>
             <span class="card__deckle" aria-hidden="true"></span>
           </a>
@@ -272,6 +289,7 @@
                  width="1122" height="1402" alt="Blue Flame tee in periwinkle, front view"
                  loading="lazy" decoding="async"
                  style="object-position:50% 50%">
+            <span class="sfx bleed bleed--down" aria-hidden="true" lang="ja">ゴォ</span>
             <span class="splat" aria-hidden="true"><i style="--n:0;--dx:-46px;--dy:-34px"></i><i style="--n:1;--dx:38px;--dy:-52px"></i><i style="--n:2;--dx:58px;--dy:18px"></i><i style="--n:3;--dx:-30px;--dy:46px"></i><i style="--n:4;--dx:72px;--dy:-12px"></i><i style="--n:5;--dx:-64px;--dy:8px"></i></span>
             <span class="card__deckle" aria-hidden="true"></span>
           </a>
@@ -298,6 +316,7 @@
                  width="1024" height="1536" alt="Demon Blood tee in sakura pink, front view"
                  loading="lazy" decoding="async"
                  style="object-position:50% 36%">
+            <span class="sfx bleed bleed--down" aria-hidden="true" lang="ja">ヒュン</span>
             <span class="splat" aria-hidden="true"><i style="--n:0;--dx:-46px;--dy:-34px"></i><i style="--n:1;--dx:38px;--dy:-52px"></i><i style="--n:2;--dx:58px;--dy:18px"></i><i style="--n:3;--dx:-30px;--dy:46px"></i><i style="--n:4;--dx:72px;--dy:-12px"></i><i style="--n:5;--dx:-64px;--dy:8px"></i></span>
             <span class="card__deckle" aria-hidden="true"></span>
           </a>

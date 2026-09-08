@@ -26,6 +26,21 @@ function splat() {
     `</span>`;
 }
 
+/* 効果音. Every product has carried a hand-authored katakana onomatopoeia in
+   js/data/products.js since the file was written — ゴウ, ズシャ, ゴォ, ヒュン, ドン,
+   ザアッ, シャッ, ドドン, シュン, ゴゴ — and NOTHING has ever read it. css/components.css
+   has carried a matching `.sfx` rule with `writing-mode: vertical-rl` and
+   nothing has ever used that either. Both halves of the component shipped;
+   the markup between them never did.
+
+   It is struck on the TURN and never at rest, because an SFX word is a
+   reaction to an impact. Katakana sitting on a page that has not done
+   anything is just decoration in a script most visitors cannot read. */
+function sfx(p) {
+  if (!p.sfx) return '';
+  return `<span class="sfx bleed bleed--down" aria-hidden="true" lang="ja">${p.sfx}</span>`;
+}
+
 function priceBlock(p) {
   const now = fmt(priceOf(p));
   if (!p.onSale) {
@@ -44,8 +59,15 @@ function priceBlock(p) {
 
 function card(p, { eager = false } = {}) {
   const img = p.front;
-  const ink = p.accentInk || 'var(--sumi)';
-  const splash = p.nearNeutral ? 'var(--shu)' : p.colorway.hex;
+  /* --ink and --brand, NOT --sumi and --shu. Those two token names were
+     renamed in tokens.css and never chased into here, so three cards in
+     collection.html shipped `--accent-ink:var(--sumi)` — a reference to
+     nothing. It LOOKED fine only because every consumer happens to be written
+     `var(--accent-ink, var(--ink))`: the undefined token makes the custom
+     property guaranteed-invalid, the fallback takes over, and the bug pays
+     for itself in confusion the first time someone removes a fallback. */
+  const ink = p.accentInk || 'var(--ink)';
+  const splash = p.nearNeutral ? 'var(--brand)' : p.colorway.hex;
   const alt = `${p.name} tee in ${p.colorway.name.toLowerCase()}, front view`;
   return `
         <article class="card" data-id="${p.id}" data-reveal
@@ -59,6 +81,7 @@ function card(p, { eager = false } = {}) {
                  width="${img.w}" height="${img.h}" alt="${esc(alt)}"
                  ${eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"'}
                  style="object-position:${img.pos}">
+            ${sfx(p)}
             ${splat()}
             <span class="card__deckle" aria-hidden="true"></span>
           </a>
@@ -77,7 +100,7 @@ function card(p, { eager = false } = {}) {
 
 function leaf(p, i) {
   const src = p.hero || p.front;
-  const ink = p.accentInk || 'var(--sumi)';
+  const ink = p.accentInk || 'var(--ink)';
   /* No kanji overlay on the artwork: these hero composites already carry
      their own brushed kanji, and stacking a second set on top reads as a
      mistake. The kanji moves to the caption, where it can still lift into the

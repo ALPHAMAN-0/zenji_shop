@@ -114,6 +114,84 @@ hits=$(grep -rn 'rel="preload"[^>]*as="font"' --include='*.html' . --exclude-dir
 if [ -n "$hits" ]; then echo "$hits"; note "font preload missing crossorigin"
 else ok "font preloads carry crossorigin"; fi
 
+# 11. CSS STRUCTURAL INTEGRITY. Nothing else in this repo catches CSS that
+#     merely parses WRONG — the browser reports no error, devtools shows no
+#     warning, and the page looks fine until you notice a signature moment is
+#     missing. This gate exists because motion.css shipped three orphaned
+#     @keyframes BODIES: an edit deleted the `@keyframes <name> {` openers and
+#     left `62% { ... } }` behind. Per CSS Syntax L3 a stray `}` at the top
+#     level starts a qualified rule whose prelude runs to the next `{`, so each
+#     orphan SWALLOWED the rule after it. `drip` and `shuchusen` both vanished,
+#     document.styleSheets reported ZERO keyframes site-wide, and the 集中線
+#     flash — with no keyframes left to scale and clear it — sat on screen at
+#     full strength for 900ms instead of 260.
+#
+#     Three checks per stylesheet, comments and strings stripped first:
+#       a. braces balance and depth never goes negative (a stray `}`)
+#       b. no TOP-LEVEL rule whose prelude is a keyframe selector
+#          (`from`, `to`, `62%`, `62%, 74%`) — that is an orphaned body
+#       c. every animation name resolves to an @keyframes somewhere in css/
+hits=$(python3 - <<'CSSCHECK'
+import glob, re
+
+def strip(src):
+    src = re.sub(r'/\*.*?\*/', '', src, flags=re.S)
+    src = re.sub(r'"(?:[^"\\]|\\.)*"', '""', src)
+    src = re.sub(r"'(?:[^'\\]|\\.)*'", "''", src)
+    return src
+
+KEYSEL = re.compile(r'^(?:(?:from|to|\d+(?:\.\d+)?%)\s*,\s*)*(?:from|to|\d+(?:\.\d+)?%)$')
+RESERVED = {'none','inherit','initial','unset','revert','normal','alternate','reverse',
+            'alternate-reverse','forwards','backwards','both','infinite','running',
+            'paused','linear','ease','ease-in','ease-out','ease-in-out','step-start','step-end'}
+
+bad, defined, used = [], set(), []
+
+for f in sorted(glob.glob('css/*.css')):
+    src = strip(open(f, encoding='utf-8').read())
+    defined |= set(re.findall(r'@keyframes\s+([\w-]+)', src))
+
+    lineno, ln = {}, 1
+    for i, ch in enumerate(src):
+        lineno[i] = ln
+        if ch == '\n':
+            ln += 1
+
+    depth = start = 0
+    for i, ch in enumerate(src):
+        if ch == '{':
+            if depth == 0 and KEYSEL.match(src[start:i].strip()):
+                bad.append("%s:%d: orphaned @keyframes body — top-level rule with "
+                           "keyframe selector '%s'" % (f, lineno[i], src[start:i].strip()))
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+            if depth < 0:
+                bad.append("%s:%d: stray '}' at top level — it swallows the next rule"
+                           % (f, lineno[i]))
+                depth = 0
+            if depth == 0:
+                start = i + 1
+    if depth:
+        bad.append('%s: unbalanced braces (ends %+d)' % (f, depth))
+
+    for m in re.finditer(r'\banimation(?:-name)?\s*:\s*([^;}]+)', src):
+        for tok in re.split(r'[,\s]+', m.group(1).strip()):
+            if (tok and tok not in RESERVED and not tok.endswith(('s', '%'))
+                    and re.fullmatch(r'[A-Za-z_-][\w-]*', tok)):
+                used.append((f, tok))
+                break
+
+for f, name in used:
+    if name not in defined:
+        bad.append("%s: animation '%s' has no @keyframes anywhere in css/" % (f, name))
+
+print('\n'.join(bad))
+CSSCHECK
+)
+if [ -n "$hits" ]; then echo "$hits"; note "css structural integrity"
+else ok "css parses as authored (braces, keyframes, animation names)"; fi
+
 echo
 if [ $fail -eq 0 ]; then printf '\033[32mPASS\033[0m — safe to push\n'; else printf '\033[31mFAILED\033[0m\n'; fi
 exit $fail

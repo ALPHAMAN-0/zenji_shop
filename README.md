@@ -28,9 +28,11 @@ nothing holds that value.
 
 | | | |
 |---|---|---|
-| 墨磨り | **The Grinding** | The ZJ monogram is *painted in* behind a wet diagonal stroke, then a vermillion seal stamps beside it. |
-| 一筆 | **The First Stroke** | One colossal brush stroke paints across the viewport with the laneway footage living inside it as a warm monochrome ink wash. |
-| 乾く | **It Dries** | On scroll the stroke evaporates from the left in ragged patches while the remaining ink darkens. |
+| 墨磨り | **The Grinding** | The ZJ monogram is *painted in* behind a wet diagonal stroke, then a vermillion seal punches down beside it — landing **off register** and pulling in, the way a second colour does on a press that is not quite true. Then the paper is gone in a single frame: the one hard **cut** in a site where everything else bleeds. |
+| 一筆 | **The First Stroke** | One colossal brush stroke paints across the viewport with the laneway footage living inside it — **in full colour.** |
+| 版ずれ | **The Misregister** | Each headline word arrives as two impressions: a vermillion plate a few pixels out, and the black plate over it. The vermillion pulls into register and the colour fringe closes. |
+| 効果音 | **The SFX** | Turn a product card and its own katakana — ゴウ, ズシャ, ゴォ, ヒュン — is struck down the frame. Never at rest: an SFX is a *reaction to an impact*, not decoration. |
+| 乾く | **It Dries** | On scroll the stroke evaporates from the left in ragged patches, the remaining ink darkens — and **the colour drains out of it.** A tankōbon is monochrome pages and a full-colour cover; the hero is the cover, and this is the seam. It is the one place you can watch the palette law being applied rather than be told about it. |
 | 裏 | **The Turn** | The back of a tee *bleeds through* the front from the cursor's side, and the mount tone interpolates so the photo edge never seams. |
 | 屏風 | **The Folding Screen** | The four Origin tees are leaves of a byōbu that unfold in place on alternating hinges. |
 | 墨流し | **The Flood** | Ink floods up with a torn front and the headline on the boundary inverts mid-word — pure `mix-blend-mode: difference`, zero JavaScript. |
@@ -40,6 +42,13 @@ nothing holds that value.
 Deliberately **absent**, because each is a template tell: custom cursors, cursor trails,
 magnetic buttons, glassmorphism, glow, gradient type, particle fields, horizontal-scroll
 sections, `font-weight` above 500, and evenly-spaced staggers.
+
+Also absent, and these were *considered and cut*: a 集中線 burst on arrival (the loudest thing
+on the site, spent on a visitor who has done nothing yet — it stays on the quick view, where it
+is earned), a screen shake (unrequested vestibular motion), a black leader frame at first paint,
+registration crosses (a press artefact trimmed off before a book is ever bound — legible only to
+people who have opened a print-ready PDF), and 第○話 episode numbers on every section eyebrow
+(costume applied to wayfinding, on a storefront).
 
 ---
 
@@ -73,8 +82,16 @@ tools/  check-paths.sh · gen-markup.mjs · sync-shell.mjs
 
 The site never runs them; their output is committed.
 
-- `check-paths.sh` — **run before every push.** Catches absolute paths, `url()` missing `../`,
-  bad module specifiers, a `<base>` tag, an uncommitted `.nojekyll`, and missing images.
+- `check-paths.sh` — **run before every push.** Eleven gates: absolute paths, `url()` missing
+  `../`, a `<base>` tag, local URLs, bad module specifiers, an uncommitted `.nojekyll`, missing
+  or miscased images, time literals outside `tokens.css`, storage-prefix drift, font preloads
+  without `crossorigin`, and **CSS that parses wrong** — orphaned `@keyframes` bodies, stray
+  top-level braces, and `animation:` names with no `@keyframes` behind them. That last gate
+  exists because this file shipped three orphaned keyframe bodies: per CSS Syntax L3 a stray `}`
+  at the top level starts a qualified rule whose prelude runs to the next `{`, so each one
+  *swallowed the rule after it*. `document.styleSheets` reported **zero keyframes site-wide**,
+  and the 集中線 flash — with nothing left to scale and clear it — sat on screen at full strength
+  for 900ms instead of 260.
 - `gen-markup.mjs` — regenerates product markup from `js/data/products.js`.
 - `sync-shell.mjs` — copies the canonical nav/footer out of `index.html` into the other pages.
 
@@ -94,6 +111,22 @@ The site never runs them; their output is committed.
   of 6 concurrent bleeds as a queue. Ten at once drops a mid-range Android to 30fps.
 - **One rAF loop, in `js/core/raf.js`.** Reads are batched before writes, and a change guard
   means idle scroll produces zero style writes. Don't add a second loop.
+- **The plate owns the stage.** `js/main.js` does not start `observe()` or `Hero.init()` until
+  `Preloader.run()`'s promise settles. Before that ordering existed, the entire 一筆 arrival —
+  stroke, three words, dry-down — completed between 967ms and 1268ms behind a plate that did not
+  clear until 2245ms: the site's signature moment played, in full, to nobody, on every first
+  visit. The promise is raced against a 3000ms net, because a page whose reveal never fires is
+  a page of invisible content.
+- **The plate's timings come from tokens, not literals.** Gate 8 only scans `css/*.css`, so
+  `preloader.js` was the one file conducting the site's timing while bound to none of it. The
+  running order is now `--d-soak + --d-stamp + --d-turn` = 1520ms, asserted against the 2200ms
+  cap in code.
+- **A `transition` shorthand resets `transition-delay`.** `.bleed.dry` has to restate it or the
+  reveal stagger is silently discarded — which is exactly what happened to the hero headline.
+- **`[hidden]` needs `display: none !important` in `base.css`.** The UA rule is a single
+  attribute selector and loses to any author `display`. Two components trusted the attribute and
+  both lost: the preloader plate (JS failure ⇒ opaque white page) and the collection filter
+  (which announced "5 of 10 products shown" while all ten stayed on screen).
 - **Reduced motion swaps token values, never `*{animation:none}`.** A blanket nuke breaks every
   `transitionend` the close sequences depend on. Durations become `1ms`, not `0ms`, so those
   events still fire. The footer toggle layers over the OS setting in both directions.

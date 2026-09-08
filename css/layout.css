@@ -37,9 +37,67 @@
 .nav__links { display: flex; gap: clamp(1rem, 2.2vw, 2rem); margin-left: auto; }
 .nav__tools { display: flex; align-items: center; gap: 0.35rem; }
 
-@media (max-width: 860px) {
-  .nav__links { display: none; }
+/* --- The mobile sheet ------------------------------------------------------
+   nav.js has toggled `.is-open` on .nav__links ever since the sheet was moved
+   out of JS and into "the stylesheet" (js/core/nav.js:41-50) — and the rule
+   was never written. Below the breakpoint `.nav__links { display: none }` won
+   unconditionally, so on every phone the hamburger set aria-expanded="true",
+   called .focus() on a display:none link, and nothing appeared: Drop,
+   Collection, Lookbook and Our Story were unreachable from the header on the
+   entire mobile site. The footer was the only way to navigate.
+
+   --z-nav-sheet (89) has sat in tokens.css since the beginning describing
+   exactly this component — "one below the nav: the mobile sheet drops from
+   under the header, never over it" — with no consumer anywhere. This is it.
+
+   The breakpoint is 959, not 860. nav.js:6-9 says SHEET_MAX "must match the
+   media query in layout.css" and names the 960 rung of the ladder; layout.css
+   said 860, which is not on the ladder at all. Between 861 and 959px nav.js
+   believed it was in sheet mode while the horizontal links were still shown,
+   so widening out of the sheet closed nothing.
+
+   It DROPS on a clip wipe — Tier C of the .bleed primitive: no opacity, no
+   mask layer, no second animated property. `visibility` carries the AT and
+   tab-order state, delayed by one full duration on close so the wipe is seen
+   before the sheet leaves the tree, and undelayed on open so the first link is
+   focusable in the same frame nav.js focuses it. */
+@media (max-width: 959px) {
+  .nav__links {
+    position: fixed;
+    top: calc(var(--header-h) + env(safe-area-inset-top));
+    left: 0; right: 0;
+    z-index: var(--z-nav-sheet);
+    display: grid;
+    gap: 0;
+    margin-left: 0;
+    padding: var(--sp-2) var(--gutter) calc(var(--sp-5) + env(safe-area-inset-bottom));
+    background: var(--ground);
+    border-bottom: var(--rule) solid var(--rule-c);
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    transition: clip-path var(--d-cut) var(--e-brush),
+                visibility 0ms linear var(--d-cut);
+  }
+  .nav__links.is-open {
+    clip-path: inset(0 0 0 0);
+    visibility: visible;
+    transition: clip-path var(--d-cut) var(--e-brush), visibility 0ms;
+  }
+  /* In the sheet each link is a row, so the scaled underline that reads as a
+     hover affordance on a horizontal bar would stretch the full width. It
+     becomes a left rule on the current page instead. */
+  .nav__links .nav__link {
+    padding-block: var(--sp-3);
+    padding-inline: var(--sp-3);
+    border-bottom: var(--rule) solid var(--rule-c);
+  }
+  .nav__links .nav__link:last-child { border-bottom: 0; }
+  .nav__links .nav__link::after { display: none; }
+  .nav__links .nav__link[aria-current="page"] { box-shadow: inset 2px 0 0 var(--brand); }
 }
+
+/* The burger's own visibility lives in components.css, beside the
+   .icon-btn display rule it has to beat — see the note there. */
 
 /* --- Section rhythm ------------------------------------------------------- */
 .section { padding-block: var(--sp-section); }

@@ -34,9 +34,33 @@
 .hero__media img,
 .hero__media video {
   width: 100%; height: 100%; object-fit: cover;
-  /* One filter chain, quantized 1/12 by the rAF loop so it repaints rarely. */
-  filter: grayscale(1) sepia(var(--v-sep, .34)) contrast(var(--v-con, 1.18))
-          brightness(var(--v-bri, 1.02));
+  /* THE COVER IS IN COLOUR — and this is the whole answer to "it doesn't feel
+     like an anime site".
+
+     image/hero-poster.webp is a marigold Naruto tee: a sumi-e portrait with
+     太陽の意志 down the chest, worn in a Melbourne graffiti laneway saturated
+     with colour. It is the single most anime object the site owns. This rule
+     used to open `grayscale(1)`, which deleted the artwork, the kanji, the
+     orange and the entire laneway, and handed the visitor a warm grey texture.
+     The site was applying grayscale(1) to its own anime art.
+
+     A tankōbon is monochrome pages and a FULL-COLOUR COVER. So the hero is the
+     cover: it arrives saturated, and 乾く dries it to ink as you scroll into the
+     shop. The stark ink-on-paper law is not weakened — it is where the site
+     ARRIVES rather than where it starts, which is what makes it a law you can
+     see happen instead of one you have to be told about.
+
+     --v-dry replaces --v-sep, which was consumed here and DEFINED NOWHERE: the
+     only var() in the stylesheet with no producer, so the sepia leg sat pinned
+     at its fallback forever while the comment claimed the rAF loop quantized
+     it. --v-dry is driven by js/effects/hero.js off the SAME quantized 1/12
+     scroll key that already drives contrast and brightness — one more channel
+     on an existing task, no new loop, no new read.
+
+     multiply stays: over paper it is identity, so colour survives it intact,
+     and it is still what makes the ink soak into the page as the wash sets. */
+  filter: grayscale(var(--v-dry, 0)) sepia(calc(var(--v-dry, 0) * .34))
+          contrast(var(--v-con, 1.06)) brightness(var(--v-bri, 1));
   mix-blend-mode: multiply;
 }
 
@@ -45,10 +69,28 @@
    serif over a busy mid-tone photograph is unreadable, and a drop-shadow
    would be the cheap fix that makes it look like a stock template. */
 .hero__scrim {
-  position: absolute; inset: auto 0 -1px 0; height: 74%;
+  position: absolute; inset: 0 0 -1px 0;
   z-index: 1; pointer-events: none;
-  background: linear-gradient(to bottom,
-    #FFFFFF00 0%, #FFFFFFA6 26%, #FFFFFFE6 50%, #FFFFFFFA 72%, var(--ground) 100%);
+  /* TWO AXES, because the type and the artwork want opposite things.
+
+     This was one bottom-up gradient reaching 65% white by 26% of the way down
+     — which was survivable while the photograph was greyscale, and destroys it
+     now that it is not. The headline sits in the LEFT quarter; the tee and the
+     portrait sit CENTRE. So the paper soaks in from the left, where the words
+     are, and clears entirely by 56% across, where the garment is. The bottom
+     ramp is left to do only the job it alone can do: land the photograph on
+     the page ground with no seam.
+
+     Measured against a WORST-CASE pure black backdrop (the real photograph is
+     lighter everywhere, so these are lower bounds), against --ink:
+       eyebrow, 11-12px .micro   11.2:1
+       WEAR / STORY, 52-72px     16.7:1
+     The 11px label is the binding constraint at 4.5:1 and it clears by 2.5x. */
+  background:
+    linear-gradient(to right,
+      #FFFFFFF7 0%, #FFFFFFEB 18%, #FFFFFF9E 32%, #FFFFFF2E 44%, #FFFFFF00 56%),
+    linear-gradient(to bottom,
+      #FFFFFF00 0%, #FFFFFF00 38%, #FFFFFF54 60%, #FFFFFFD6 82%, var(--ground) 100%);
 }
 .hero__body { position: relative; z-index: 2; }
 
@@ -62,7 +104,39 @@
 }
 /* Per-word wrappers. The stagger is per <span> translate3d + a bleed front —
    NEVER letter-spacing, which reshapes the entire text run every frame. */
-.hero__word { display: block; overflow: visible; }
+.hero__word { position: relative; display: block; overflow: visible; }
+
+/* 版ずれ HANZURE — THE MISREGISTER.
+   Each word arrives as TWO IMPRESSIONS: a vermillion plate a few pixels out,
+   and the black plate over it. Then the vermillion pulls into register and the
+   colour fringe closes. For one beat the headline is a two-colour print that
+   has not quite landed, which is what a Jump page actually looks like up close
+   — and unlike every other candidate for "make it feel anime", it costs one
+   pseudo-element, composites on `translate` with zero repaint, needs no new
+   duration token and no JavaScript, and fires on EVERY load rather than only
+   the once-per-session ones the preloader plate is seen on.
+
+   `content: attr(data-w) / ""` — the alt-text form, the same one base.css uses
+   on .eyebrow. Without the `/ ""` a screen reader reads the headline twice:
+   "Wear Wear Your Your Story Story". Where the syntax is unsupported the whole
+   declaration is invalid, no pseudo is generated, and the page simply prints
+   in one colour — which is the correct way for this to fail.
+
+   z-index -1 resolves against .hero__body's stacking context (position
+   relative, z-index 2), NOT against .hero__word, which stays z-index auto
+   precisely so it creates none. So the plate sits under the black type and
+   still above .hero__scrim. */
+.hero__word::before {
+  content: attr(data-w) / "";
+  position: absolute; inset: 0;
+  z-index: -1;
+  color: var(--brand);
+  translate: var(--reg-x, 0) var(--reg-y, 0);
+  transition: translate var(--d-turn) var(--e-snap);
+  /* Pulls in one --d-flick behind its own word landing, never with it. */
+  transition-delay: calc(var(--i) * var(--s) + var(--j) + var(--d-flick));
+}
+.hero__word.is-in::before { translate: 0 0; }
 
 .hero__cta { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-top: clamp(1.5rem, 4vh, 2.75rem); }
 
@@ -164,7 +238,20 @@
    the boundary INVERTS as the ink passes over it — mid-word, no flicker, no
    class toggle. That is difference blending, so it is perfectly frame-synced
    because it is compositing, not scripting. */
-.flood-zone { position: relative; isolation: isolate; }   /* REQUIRED for difference */
+/* isolation is REQUIRED for difference — and so is the background, which was
+   missing. `mix-blend-mode: difference` blends against the backdrop INSIDE the
+   isolated group, and this group had none: transparent everywhere the ink had
+   not yet flooded. A blend over a transparent backdrop is a no-op, so
+   .flood-zone__type painted as its own --ground white, on the white page,
+   and "Wear the Arc. Every drop limited. No restocks. Ever." was INVISIBLE
+   until the ink reached it — which on first paint, and for anyone who lands
+   mid-page or has JS fail, is always.
+
+   One opaque ground fixes both halves at once, because difference is its own
+   inverse: white on white resolves to black type on paper, white on the
+   flooded #0A0A0A resolves to #F5F5F5 type on ink. Same declaration, both
+   states, still zero JavaScript. */
+.flood-zone { position: relative; isolation: isolate; background: var(--ground); }
 .flood-zone__ink {
   position: absolute; inset: 0; z-index: 1;
   background: var(--ground-inv);
@@ -223,15 +310,31 @@
 
 /* --- Preloader 墨磨り ------------------------------------------------------ */
 .plate {
-  position: fixed; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: var(--z-plate);
   background: var(--ground);
   display: grid; place-items: center;
-  transition: transform var(--d-bleed) var(--e-exit);
 }
-.plate[data-done] { transform: translate3d(0, -101%, 0); }
+/* No exit transition, and no [data-done] rule. The plate is REMOVED, in one
+   frame — see the cut in js/components/preloader.js. Every other state change
+   on this site bleeds, which is precisely why the one hard cut reads: it is
+   the only cut in the grammar. The slide-up that stood here was also being
+   severed at roughly 94% of its travel anyway, because the removal timer and
+   the transition started a frame apart, so nobody ever saw it finish either.
+
+   z-index is the token now, not a re-literalled 300. --z-plate has held that
+   exact value in tokens.css since the beginning with no consumer. */
 .plate__mark {
   width: clamp(96px, 18vw, 168px); aspect-ratio: 1;
-  background: var(--ink);
+  /* NO background. This element is the LOGO MASK and nothing else.
+
+     It used to paint `background: var(--ink)` through that mask — so the
+     complete ZJ monogram was on screen, solid, from the first frame. The
+     child below paints the same ink in the same shape, and preloader.js gives
+     the CHILD the travelling wet-edge mask. The grind therefore animated
+     invisibly on top of an identical finished monogram, and 墨磨り THE
+     GRINDING — the first signature moment in the README, "the ZJ monogram is
+     painted in behind a wet diagonal stroke" — has never once been seen by
+     anyone. The parent holds the silhouette; only the child carries ink. */
   --fill: 0%;
   -webkit-mask-image: url(../image/wm_logo.webp);
   mask-image: url(../image/wm_logo.webp);
