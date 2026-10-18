@@ -6,12 +6,8 @@ library, no bundler, no build step, no dependencies — `git clone` and open it.
 ## Architecture / How it Works
 
 ```mermaid
-flowchart LR
-    A[User] --> B[Zenji Shop]
-    B --> C{Logic}
-    C --> D[(Data)]
-    C --> E[Output]
-    D --> C
+flowchart TD
+    Image_Assets[Image Assets]
 ```
 
 
