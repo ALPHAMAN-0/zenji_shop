@@ -3,6 +3,18 @@
 A storefront built with **hand-written HTML, CSS and JavaScript only**. No framework, no
 library, no bundler, no build step, no dependencies — `git clone` and open it.
 
+## Architecture / How it Works
+
+```mermaid
+flowchart LR
+    A[User] --> B[Zenji Shop]
+    B --> C{Logic}
+    C --> D[(Data)]
+    C --> E[Output]
+    D --> C
+```
+
+
 **Live:** https://alphaman-0.github.io/zenji_shop/
 
 ---
